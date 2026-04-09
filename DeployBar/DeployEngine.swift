@@ -125,10 +125,15 @@ final class DeployEngine: ObservableObject {
             return false
         }
 
-        if device.platform == .android {
-            let ok = await runCommand(flutter, args: ["build", "apk", "--release"], cwd: projectPath)
-            if !ok { return false }
+        // Always build before install — `flutter install` alone just pushes a
+        // stale prebuilt artifact and does NOT rebuild from source.
+        let buildArgs: [String]
+        switch device.platform {
+        case .ios:     buildArgs = ["build", "ios", "--release"]
+        case .android: buildArgs = ["build", "apk", "--release"]
         }
+        let built = await runCommand(flutter, args: buildArgs, cwd: projectPath)
+        if !built { return false }
 
         return await runCommand(flutter, args: ["install", "-d", device.id, "--release"], cwd: projectPath)
     }
