@@ -12,7 +12,8 @@ struct PopoverRootView: View {
     @StateObject private var deviceManager = DeviceManager()
     @StateObject private var projectScanner = ProjectScanner()
     @StateObject private var deployEngine = DeployEngine()
-    @State private var selectedProjectId: UUID?
+    @AppStorage("lastProjectPath") private var lastProjectPath: String = ""
+    @AppStorage("lastDeviceId") private var lastDeviceId: String = ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -29,7 +30,10 @@ struct PopoverRootView: View {
             Group {
                 switch tab {
                 case .deploy:
-                    DeployTabView(selectedProjectId: $selectedProjectId)
+                    DeployTabView(
+                        selectedProjectPath: $lastProjectPath,
+                        selectedDeviceId: $lastDeviceId
+                    )
                         .environmentObject(deviceManager)
                         .environmentObject(projectScanner)
                         .environmentObject(deployEngine)
@@ -49,15 +53,43 @@ struct DeployTabView: View {
     @EnvironmentObject var deviceManager: DeviceManager
     @EnvironmentObject var projectScanner: ProjectScanner
     @EnvironmentObject var deployEngine: DeployEngine
-    @Binding var selectedProjectId: UUID?
+    @Binding var selectedProjectPath: String
+    @Binding var selectedDeviceId: String
 
     private var selectedProject: ScannedProject? {
-        projectScanner.projects.first { $0.id == selectedProjectId }
+        projectScanner.projects.first { $0.path == selectedProjectPath }
+    }
+
+    private var selectedDevice: ConnectedDevice? {
+        deviceManager.devices.first { $0.id == selectedDeviceId }
     }
 
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
+                Color.clear.frame(height: 0)
+                    .onChange(of: projectScanner.projects) { _, projs in
+                        if projectScanner.projects.first(where: { $0.path == selectedProjectPath }) == nil,
+                           let first = projs.first {
+                            selectedProjectPath = first.path
+                        }
+                    }
+                    .onChange(of: deviceManager.devices) { _, devs in
+                        if deviceManager.devices.first(where: { $0.id == selectedDeviceId }) == nil,
+                           let first = devs.first {
+                            selectedDeviceId = first.id
+                        }
+                    }
+                    .onAppear {
+                        if selectedProjectPath.isEmpty || projectScanner.projects.first(where: { $0.path == selectedProjectPath }) == nil,
+                           let first = projectScanner.projects.first {
+                            selectedProjectPath = first.path
+                        }
+                        if selectedDeviceId.isEmpty || deviceManager.devices.first(where: { $0.id == selectedDeviceId }) == nil,
+                           let first = deviceManager.devices.first {
+                            selectedDeviceId = first.id
+                        }
+                    }
                 VStack(alignment: .leading, spacing: 14) {
                     if deployEngine.isDeploying {
                         deployingSection
@@ -76,21 +108,6 @@ struct DeployTabView: View {
 
     @ViewBuilder
     private var devicesAndProjectsSection: some View {
-        sectionLabel("Devices · via flutter devices")
-        if let err = deviceManager.error {
-            errorView(err)
-        } else if deviceManager.devices.isEmpty {
-            emptyState("Plug in or pair a device")
-        } else {
-            VStack(spacing: 5) {
-                ForEach(deviceManager.devices) { d in
-                    DeviceRowView(device: d)
-                }
-            }
-        }
-
-        Divider().background(Color(white: 0.17))
-
         sectionLabel("Flutter Projects")
         if projectScanner.projects.isEmpty {
             emptyState("No Flutter projects found. Add a folder in Settings.")
@@ -99,9 +116,29 @@ struct DeployTabView: View {
                 ForEach(projectScanner.projects) { p in
                     ProjectRowView(
                         project: p,
-                        selected: selectedProjectId == p.id
+                        selected: selectedProjectPath == p.path
                     ) {
-                        selectedProjectId = p.id
+                        selectedProjectPath = p.path
+                    }
+                }
+            }
+        }
+
+        Divider().background(Color(white: 0.17))
+
+        sectionLabel("Devices · via flutter devices")
+        if let err = deviceManager.error {
+            errorView(err)
+        } else if deviceManager.devices.isEmpty {
+            emptyState("Plug in or pair a device")
+        } else {
+            VStack(spacing: 5) {
+                ForEach(deviceManager.devices) { d in
+                    DeviceRowView(
+                        device: d,
+                        selected: selectedDeviceId == d.id
+                    ) {
+                        selectedDeviceId = d.id
                     }
                 }
             }
@@ -133,14 +170,14 @@ struct DeployTabView: View {
             }
             .buttonStyle(.plain)
         } else {
-            let canDeploy = selectedProject != nil && !deviceManager.devices.isEmpty
+            let canDeploy = selectedProject != nil && selectedDevice != nil
             Button {
-                guard let proj = selectedProject else { return }
-                deployEngine.deploy(project: proj, devices: deviceManager.devices)
+                guard let proj = selectedProject, let dev = selectedDevice else { return }
+                deployEngine.deploy(project: proj, devices: [dev])
             } label: {
                 Text(canDeploy
-                     ? "🚀 Deploy → \(deviceManager.devices.map(\.name).joined(separator: ", "))"
-                     : "Select a project and connect a device")
+                     ? "🚀 Deploy → \(selectedDevice?.name ?? "")"
+                     : "Select a project and a device")
                     .font(.system(size: 12, weight: .bold, design: .monospaced))
                     .lineLimit(1)
                     .frame(maxWidth: .infinity)
@@ -191,8 +228,11 @@ struct DeployTabView: View {
 
 struct DeviceRowView: View {
     let device: ConnectedDevice
+    let selected: Bool
+    let onTap: () -> Void
 
     var body: some View {
+        Button(action: onTap) {
         HStack(spacing: 9) {
             Text(device.platform == .ios ? "📱" : "🤖")
                 .font(.system(size: 18))
@@ -221,8 +261,17 @@ struct DeviceRowView: View {
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 7)
-        .background(Color(white: 0.122))
+        .background(selected
+            ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.05)
+            : Color(white: 0.122))
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(selected ? Color(red: 0.13, green: 0.77, blue: 0.37) : Color.clear, lineWidth: 1)
+        )
         .cornerRadius(6)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.white)
     }
 
     private func truncatedId(_ id: String) -> String {
