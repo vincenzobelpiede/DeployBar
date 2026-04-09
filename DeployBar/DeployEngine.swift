@@ -22,8 +22,18 @@ struct DeployRecord: Identifiable, Codable, Equatable {
     let duration: TimeInterval
     let status: Status
     let errorSnippet: String?
+    var logText: String?   // up to last 500 lines, formatted "HH:mm:ss | level | text"
 
     enum Status: String, Codable { case success, failed, cancelled }
+}
+
+extension Array where Element == LogLine {
+    /// Formats log lines for clipboard / persistence: "HH:mm:ss | level | text".
+    func formatted(maxLines: Int = 500) -> String {
+        let trimmed = self.suffix(maxLines)
+        return trimmed.map { "\($0.timestamp) | \($0.level.rawValue.padding(toLength: 7, withPad: " ", startingAt: 0)) | \($0.text)" }
+            .joined(separator: "\n")
+    }
 }
 
 @MainActor
@@ -102,6 +112,7 @@ final class DeployEngine: ObservableObject {
 
             let duration = Date().timeIntervalSince(startTime)
             let status: DeployRecord.Status = self.cancelled ? .cancelled : (anyFailed ? .failed : .success)
+            let logSnapshot = await MainActor.run { self.logLines.formatted(maxLines: 500) }
             let record = DeployRecord(
                 id: UUID(),
                 projectName: projectName,
@@ -109,7 +120,8 @@ final class DeployEngine: ObservableObject {
                 startTime: startTime,
                 duration: duration,
                 status: status,
-                errorSnippet: firstError
+                errorSnippet: firstError,
+                logText: logSnapshot
             )
             await MainActor.run {
                 self.saveHistory(record)

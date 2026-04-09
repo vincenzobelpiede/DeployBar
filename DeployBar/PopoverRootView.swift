@@ -217,7 +217,11 @@ struct DeployTabView: View {
 
     @ViewBuilder
     private var deployingSection: some View {
-        sectionLabel("Step \(deployEngine.currentStep)/\(deployEngine.totalSteps) · \(deployEngine.currentDeviceName)")
+        HStack {
+            sectionLabel("Step \(deployEngine.currentStep)/\(deployEngine.totalSteps) · \(deployEngine.currentDeviceName)")
+            Spacer()
+            CopyLogButton(textProvider: { deployEngine.logLines.formatted() })
+        }
         ProgressView()
             .progressViewStyle(.linear)
             .tint(Color(red: 0.13, green: 0.77, blue: 0.37))
@@ -389,6 +393,15 @@ struct ProjectRowView: View {
                 .font(.system(size: 9, design: .monospaced))
                 .foregroundStyle(Color(white: 0.44))
             Button {
+                NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: project.path)])
+            } label: {
+                Image(systemName: "folder")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color(white: 0.55))
+            }
+            .buttonStyle(.plain)
+            .help("Show in Finder")
+            Button {
                 openInTerminal(project.path)
             } label: {
                 Image(systemName: "terminal")
@@ -425,6 +438,34 @@ struct ProjectRowView: View {
             var err: NSDictionary?
             src.executeAndReturnError(&err)
         }
+    }
+}
+
+struct CopyLogButton: View {
+    let textProvider: () -> String
+    @State private var copied: Bool = false
+
+    var body: some View {
+        Button {
+            let text = textProvider()
+            let pb = NSPasteboard.general
+            pb.clearContents()
+            pb.setString(text, forType: .string)
+            copied = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { copied = false }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                Text(copied ? "Copied" : "Copy Log")
+            }
+            .font(.system(size: 9, weight: .semibold, design: .monospaced))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color(white: 0.122))
+            .foregroundStyle(copied ? Color(red: 0.13, green: 0.77, blue: 0.37) : Color(white: 0.7))
+            .cornerRadius(4)
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -472,6 +513,7 @@ struct LogView: View {
 
 struct HistoryTabView: View {
     @EnvironmentObject var deployEngine: DeployEngine
+    @State private var expandedId: UUID?
 
     private var recentThree: [DeployRecord] { Array(deployEngine.history.prefix(3)) }
 
@@ -515,22 +557,55 @@ struct HistoryTabView: View {
                         .padding(.vertical, 40)
                 } else {
                     ForEach(deployEngine.history) { rec in
-                        HStack(spacing: 9) {
-                            Text(badgeText(rec.status))
-                                .font(.system(size: 8, weight: .bold, design: .monospaced))
-                                .frame(width: 30, height: 16)
-                                .background(badgeColor(rec.status).opacity(0.15))
-                                .foregroundStyle(badgeColor(rec.status))
-                                .cornerRadius(4)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("\(rec.projectName) → \(rec.deviceNames.joined(separator: ", "))")
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .lineLimit(1)
-                                Text("\(RelativeTime.short(from: rec.startTime)) ago · \(Int(rec.duration))s")
-                                    .font(.system(size: 9, design: .monospaced))
-                                    .foregroundStyle(Color(white: 0.44))
+                        VStack(spacing: 0) {
+                            HStack(spacing: 9) {
+                                Text(badgeText(rec.status))
+                                    .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                    .frame(width: 30, height: 16)
+                                    .background(badgeColor(rec.status).opacity(0.15))
+                                    .foregroundStyle(badgeColor(rec.status))
+                                    .cornerRadius(4)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("\(rec.projectName) → \(rec.deviceNames.joined(separator: ", "))")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .lineLimit(1)
+                                    Text("\(RelativeTime.short(from: rec.startTime)) ago · \(Int(rec.duration))s")
+                                        .font(.system(size: 9, design: .monospaced))
+                                        .foregroundStyle(Color(white: 0.44))
+                                }
+                                Spacer()
+                                if rec.logText != nil {
+                                    Image(systemName: expandedId == rec.id ? "chevron.up" : "chevron.down")
+                                        .font(.system(size: 9))
+                                        .foregroundStyle(Color(white: 0.44))
+                                }
                             }
-                            Spacer()
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                if rec.logText != nil {
+                                    expandedId = (expandedId == rec.id) ? nil : rec.id
+                                }
+                            }
+
+                            if expandedId == rec.id, let log = rec.logText {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack {
+                                        Spacer()
+                                        CopyLogButton(textProvider: { log })
+                                    }
+                                    ScrollView {
+                                        Text(log)
+                                            .font(.system(size: 9, design: .monospaced))
+                                            .foregroundStyle(Color(white: 0.7))
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .textSelection(.enabled)
+                                    }
+                                    .frame(maxHeight: 200)
+                                    .background(Color(white: 0.067))
+                                    .cornerRadius(4)
+                                }
+                                .padding(.top, 6)
+                            }
                         }
                         .padding(.horizontal, 9)
                         .padding(.vertical, 6)
