@@ -24,6 +24,8 @@ targets:
         CFBundleName: DeployBar
         CFBundleDisplayName: DeployBar
         NSHumanReadableCopyright: "© 2026 Salesforza"
+    entitlements:
+      path: DeployBar/DeployBar.entitlements
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.salesforza.deploybar
@@ -32,3 +34,10 @@ targets:
         COMBINE_HIDPI_IMAGES: YES
         ARCHS: "$(ARCHS_STANDARD)"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_ENTITLEMENTS: DeployBar/DeployBar.entitlements
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Developer ID Application: Vincenzo Belpiede (PH63999XMX)"
+          DEVELOPMENT_TEAM: PH63999XMX
+          OTHER_CODE_SIGN_FLAGS: "--timestamp --options runtime"

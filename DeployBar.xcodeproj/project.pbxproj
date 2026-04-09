@@ -35,6 +35,7 @@
 		A033401E92346A46CE6103B7 /* StatusIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusIcon.swift; sourceTree = "<group>"; };
 		CB9D4EBA17ACC04E8F2C9252 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DD43A2A6C53DEA9D5514D087 /* DeployBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeployBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB9004A0F3030A14A0193CF9 /* DeployBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DeployBar.entitlements; sourceTree = "<group>"; };
 		FED0A4A6C4E0346174AF8482 /* DeployBarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeployBarApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -60,6 +61,7 @@
 			children = (
 				50F128CEC831EFAF612AA4DF /* AppDelegate.swift */,
 				CB9D4EBA17ACC04E8F2C9252 /* Assets.xcassets */,
+				FB9004A0F3030A14A0193CF9 /* DeployBar.entitlements */,
 				FED0A4A6C4E0346174AF8482 /* DeployBarApp.swift */,
 				30BC71CE991E1A25320E1CE9 /* DeployEngine.swift */,
 				6203590A2B16EFB417E98B73 /* DeployStatusWindow.swift */,
@@ -107,7 +109,6 @@
 				TargetAttributes = {
 					F7093A706C16CAF06473EC86 = {
 						DevelopmentTeam = PH63999XMX;
-						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -235,6 +236,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = DeployBar/DeployBar.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -253,7 +255,11 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = DeployBar/DeployBar.entitlements;
+				CODE_SIGN_IDENTITY = "Developer ID Application: Vincenzo Belpiede (PH63999XMX)";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = PH63999XMX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DeployBar/Info.plist;
@@ -261,6 +267,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				OTHER_CODE_SIGN_FLAGS = "--timestamp --options runtime";
 				PRODUCT_BUNDLE_IDENTIFIER = com.salesforza.deploybar;
 				SDKROOT = macosx;
 			};
