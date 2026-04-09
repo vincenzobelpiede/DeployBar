@@ -15,6 +15,7 @@
 		572318E9F9FD5E7F502D89ED /* PopoverRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FAFF3261278E2222ADF955 /* PopoverRootView.swift */; };
 		6B7A2C9017CB6A89466595C1 /* DeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E07FB296B50EAF16689E0FB /* DeviceManager.swift */; };
 		BBE033981933AEB8E6052204 /* DeployStatusWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6203590A2B16EFB417E98B73 /* DeployStatusWindow.swift */; };
+		CC165BF8EEAE82A96A44CE7B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CB9D4EBA17ACC04E8F2C9252 /* Assets.xcassets */; };
 		EBC5AEB2D588C7D66EDD6716 /* ProjectScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224DA1247A788BDCBDE0FD63 /* ProjectScanner.swift */; };
 		F490B46C416C421A1E4E265B /* DeployBarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED0A4A6C4E0346174AF8482 /* DeployBarApp.swift */; };
 /* End PBXBuildFile section */
@@ -30,6 +31,7 @@
 		7E07FB296B50EAF16689E0FB /* DeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManager.swift; sourceTree = "<group>"; };
 		8A5455E1C4EB61240DA56365 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A033401E92346A46CE6103B7 /* StatusIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusIcon.swift; sourceTree = "<group>"; };
+		CB9D4EBA17ACC04E8F2C9252 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DD43A2A6C53DEA9D5514D087 /* DeployBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeployBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FED0A4A6C4E0346174AF8482 /* DeployBarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeployBarApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -55,6 +57,7 @@
 			isa = PBXGroup;
 			children = (
 				50F128CEC831EFAF612AA4DF /* AppDelegate.swift */,
+				CB9D4EBA17ACC04E8F2C9252 /* Assets.xcassets */,
 				FED0A4A6C4E0346174AF8482 /* DeployBarApp.swift */,
 				30BC71CE991E1A25320E1CE9 /* DeployEngine.swift */,
 				6203590A2B16EFB417E98B73 /* DeployStatusWindow.swift */,
@@ -77,6 +80,7 @@
 			buildConfigurationList = 606CF53741F937BF6C070B6C /* Build configuration list for PBXNativeTarget "DeployBar" */;
 			buildPhases = (
 				5FC02FD7E19FBAEE85E2A354 /* Sources */,
+				785FFEAED22A10D0231F35B0 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -122,6 +126,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		785FFEAED22A10D0231F35B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC165BF8EEAE82A96A44CE7B /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5FC02FD7E19FBAEE85E2A354 /* Sources */ = {
