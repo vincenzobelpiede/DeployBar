@@ -120,6 +120,12 @@ create-dmg \
   "${DMG_PATH}" \
   "${DMG_DIR}/" >/dev/null
 
+# Sign the DMG with the same Developer ID so spctl recognizes it.
+echo "▶ Signing DMG…"
+codesign --sign "Developer ID Application: Vincenzo Belpiede (PH63999XMX)" \
+  --timestamp \
+  "${DMG_PATH}"
+
 # Notarize the DMG too so users don't get prompted on the disk image itself
 echo "▶ Notarizing DMG…"
 xcrun notarytool submit "${DMG_PATH}" --keychain-profile DeployBar --wait
