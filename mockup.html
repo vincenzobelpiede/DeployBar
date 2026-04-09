@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeployBar v1 — Flutter Deploy Utility</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:#0D0D0F;--bg-panel:#18181B;--bg-card:#1F1F23;--bg-card-hover:#27272B;
+    --bg-input:#111113;--border:#2A2A2F;--border-active:#3F3F46;
+    --text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#71717A;
+    --green:#22C55E;--green-dim:rgba(34,197,94,0.15);
+    --blue:#3B82F6;--blue-dim:rgba(59,130,246,0.15);
+    --red:#EF4444;--red-dim:rgba(239,68,68,0.15);
+    --orange:#F59E0B;--orange-dim:rgba(245,158,11,0.15);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#000;font-family:'DM Sans',sans-serif;color:var(--text-primary);display:flex;flex-direction:column;align-items:center;gap:48px;padding:40px 20px 80px}
+  h1{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;text-align:center}
+  h1 span{color:var(--green)}
+  .sub{color:var(--text-secondary);font-size:13px;text-align:center;margin-top:6px;line-height:1.5}
+  .menu-strip{background:rgba(30,30,30,0.85);backdrop-filter:blur(20px);border-radius:8px;padding:6px 14px;display:inline-flex;align-items:center;gap:12px;font-family:'JetBrains Mono',monospace;font-size:12px;border:1px solid var(--border)}
+  .screens{display:flex;flex-wrap:wrap;gap:36px;justify-content:center;max-width:1200px}
+  .frame{width:360px;background:var(--bg-panel);border-radius:12px;border:1px solid var(--border);overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.5)}
+  .frame-top{background:var(--bg-deep);padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+  .dots{display:flex;gap:5px}.dots span{width:9px;height:9px;border-radius:50%}
+  .dots span:nth-child(1){background:#FF5F57}.dots span:nth-child(2){background:#FFBD2E}.dots span:nth-child(3){background:#28C840}
+  .tabs{display:flex;background:var(--bg-deep);border-bottom:1px solid var(--border)}
+  .tab{flex:1;text-align:center;padding:7px 0;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--text-muted);border-bottom:2px solid transparent}
+  .tab.on{color:var(--green);border-bottom-color:var(--green)}
+  .sec{padding:12px}.sec+.sec{border-top:1px solid var(--border)}
+  .sec-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  .row{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:6px;background:var(--bg-card);margin-bottom:5px;border:1px solid transparent}
+  .row:hover{background:var(--bg-card-hover);border-color:var(--border-active)}
+  .row.sel{border-color:var(--green);background:rgba(34,197,94,0.05)}
+  .ico{font-size:18px;width:24px;text-align:center;flex-shrink:0}
+  .info{flex:1;min-width:0}
+  .name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-muted)}
+  .badge{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:600;padding:2px 6px;border-radius:4px;flex-shrink:0}
+  .b-usb{background:var(--green-dim);color:var(--green)}.b-wifi{background:var(--blue-dim);color:var(--blue)}
+  .time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-muted);flex-shrink:0}
+  .flt-badge{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;padding:3px 5px;border-radius:4px;background:var(--blue-dim);color:var(--blue);width:30px;text-align:center;flex-shrink:0}
+  .btn{width:100%;padding:10px;border:none;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+  .btn-go{background:var(--green);color:#000}.btn-cancel{background:var(--red-dim);color:var(--red)}
+  .log{background:var(--bg-input);border-radius:6px;padding:8px;font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.8;color:var(--text-secondary);max-height:140px;overflow-y:auto;border:1px solid var(--border)}
+  .l-t{color:var(--text-muted);margin-right:6px}.l-ok{color:var(--green)}.l-w{color:var(--orange)}.l-i{color:var(--blue)}
+  .pbar{background:var(--bg-input);border-radius:3px;height:5px;overflow:hidden;margin:6px 0}
+  .pfill{height:100%;border-radius:3px;background:var(--green)}
+  .toast{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;font-size:11px;font-weight:500;margin-bottom:5px}
+  .t-ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,0.25)}
+  .t-err{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,0.25)}
+  .srow{display:flex;align-items:center;justify-content:space-between;padding:9px;border-radius:6px;background:var(--bg-card);margin-bottom:5px}
+  .slabel{font-size:12px;font-weight:500}.sdesc{font-size:9px;color:var(--text-muted);margin-top:2px}
+  .tog{width:32px;height:18px;border-radius:9px;background:var(--bg-input);border:1px solid var(--border);position:relative;flex-shrink:0}
+  .tog.on{background:var(--green);border-color:var(--green)}
+  .tog::after{content:'';width:12px;height:12px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .15s}
+  .tog.on::after{transform:translateX(14px)}
+  .screen-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);text-align:center;margin-bottom:8px;letter-spacing:1px}
+  .queue-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-muted);text-align:center;margin-top:4px}
+</style>
+</head>
+<body>
+
+<div style="text-align:center">
+  <h1>🚀 <span>DeployBar</span> <sup style="font-size:11px;color:var(--text-muted)">v1</sup></h1>
+  <p class="sub">Flutter projects only. Select → Deploy → Done.<br>No tokens. No LLM. Just <code style="color:var(--green)">flutter install</code>.</p>
+</div>
+
+<div class="menu-strip">
+  <span>🚀</span>
+  <span style="color:var(--green)">● 2</span>
+  <span style="color:var(--text-muted)">│</span>
+  <span style="color:var(--text-secondary)">AupairMatch</span>
+  <span style="color:var(--text-muted);font-size:10px">▾</span>
+</div>
+
+<div class="screens">
+
+  <!-- ═══ DEPLOY ═══ -->
+  <div>
+    <div class="screen-lbl">DEPLOY</div>
+    <div class="frame">
+      <div class="frame-top"><div class="dots"><span></span><span></span><span></span></div>DeployBar</div>
+      <div class="tabs"><div class="tab on">Deploy</div><div class="tab">History</div><div class="tab">Settings</div></div>
+
+      <div class="sec">
+        <div class="sec-label">Devices · via flutter devices</div>
+        <div class="row">
+          <div class="ico">📱</div>
+          <div class="info"><div class="name">iPhone 15 Pro</div><div class="meta">00008130…3630001C · ios</div></div>
+          <div class="badge b-usb">USB</div>
+        </div>
+        <div class="row">
+          <div class="ico">🤖</div>
+          <div class="info"><div class="name">Pixel 7</div><div class="meta">57181JEBF05496 · android</div></div>
+          <div class="badge b-wifi">Wi-Fi</div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-label">Flutter Projects</div>
+        <div class="row sel">
+          <div class="flt-badge">FLT</div>
+          <div class="info"><div class="name">AupairMatchFlutter</div><div class="meta">~/Developer/AupairMatchFlutter</div></div>
+          <div class="time">2h</div>
+        </div>
+        <div class="row">
+          <div class="flt-badge">FLT</div>
+          <div class="info"><div class="name">BeautyTimeBook</div><div class="meta">~/Documents/claudecode/BeautyTimeBook</div></div>
+          <div class="time">1d</div>
+        </div>
+        <div class="row">
+          <div class="flt-badge">FLT</div>
+          <div class="info"><div class="name">VenueApp</div><div class="meta">~/Documents/claudecode/VenueApp</div></div>
+          <div class="time">4d</div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <button class="btn btn-go">🚀 Deploy → iPhone, then Pixel</button>
+        <div class="queue-label">Sequential: iOS first, then Android</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DEPLOYING (sequential) ═══ -->
+  <div>
+    <div class="screen-lbl">DEPLOYING</div>
+    <div class="frame">
+      <div class="frame-top"><div class="dots"><span></span><span></span><span></span></div>DeployBar — Deploying…</div>
+      <div class="tabs"><div class="tab on">Deploy</div><div class="tab">History</div><div class="tab">Settings</div></div>
+
+      <div class="sec">
+        <div class="sec-label">Step 1/2 · 📱 iPhone — flutter install --release</div>
+        <div class="pbar"><div class="pfill" style="width:100%"></div></div>
+        <div class="log">
+          <div><span class="l-t">14:32:01</span><span class="l-i">flutter install -d 00008130… --release</span></div>
+          <div><span class="l-t">14:32:18</span><span class="l-ok">✓ Built iOS release (17s)</span></div>
+          <div><span class="l-t">14:32:34</span><span class="l-ok">✓ Installed on iPhone 15 Pro</span></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-label">Step 2/2 · 🤖 Pixel — flutter build apk + install</div>
+        <div class="pbar"><div class="pfill" style="width:55%;background:var(--blue)"></div></div>
+        <div class="log">
+          <div><span class="l-t">14:32:35</span><span class="l-i">flutter build apk --release</span></div>
+          <div><span class="l-t">14:33:16</span><span class="l-ok">✓ APK built (41s)</span></div>
+          <div><span class="l-t">14:33:17</span><span class="l-i">flutter install -d 57181JEB… --release</span></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <button class="btn btn-cancel">⏹ Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ HISTORY ═══ -->
+  <div>
+    <div class="screen-lbl">HISTORY</div>
+    <div class="frame">
+      <div class="frame-top"><div class="dots"><span></span><span></span><span></span></div>DeployBar</div>
+      <div class="tabs"><div class="tab">Deploy</div><div class="tab on">History</div><div class="tab">Settings</div></div>
+
+      <div class="sec">
+        <div class="toast t-ok">✅ AupairMatch → iPhone then Pixel · 58s</div>
+        <div class="toast t-err">❌ VenueApp → Pixel · signing error</div>
+        <div class="toast t-ok">✅ BeautyTimeBook → iPhone · 38s</div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-label">All Deploys</div>
+        <div class="row">
+          <div class="badge" style="background:var(--green-dim);color:var(--green);width:30px;text-align:center">OK</div>
+          <div class="info"><div class="name">AupairMatch → iPhone + Pixel</div><div class="meta">Today 14:32 · 58s total</div></div>
+        </div>
+        <div class="row">
+          <div class="badge" style="background:var(--red-dim);color:var(--red);width:30px;text-align:center">ERR</div>
+          <div class="info"><div class="name">VenueApp → Pixel</div><div class="meta">Today 11:05 · signing error</div></div>
+        </div>
+        <div class="row">
+          <div class="badge" style="background:var(--green-dim);color:var(--green);width:30px;text-align:center">OK</div>
+          <div class="info"><div class="name">BeautyTimeBook → iPhone</div><div class="meta">Yesterday 22:45 · 38s</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SETTINGS ═══ -->
+  <div>
+    <div class="screen-lbl">SETTINGS</div>
+    <div class="frame">
+      <div class="frame-top"><div class="dots"><span></span><span></span><span></span></div>DeployBar</div>
+      <div class="tabs"><div class="tab">Deploy</div><div class="tab">History</div><div class="tab on">Settings</div></div>
+
+      <div class="sec">
+        <div class="sec-label">Scan Folders</div>
+        <div class="srow">
+          <div><div class="slabel">Auto-scan for pubspec.yaml</div><div class="sdesc">~/Documents/claudecode/ · ~/Developer/</div></div>
+          <div class="tog on"></div>
+        </div>
+        <div class="srow">
+          <div><div class="slabel">Sort by last modified</div></div>
+          <div class="tog on"></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-label">Build</div>
+        <div class="srow">
+          <div><div class="slabel">Default mode</div></div>
+          <div style="font-family:'JetBrains Mono';font-size:10px;color:var(--green)">--release ▾</div>
+        </div>
+        <div class="srow">
+          <div><div class="slabel">Auto-launch after install</div></div>
+          <div class="tog on"></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-label">Notifications</div>
+        <div class="srow">
+          <div><div class="slabel">macOS alert on complete</div></div>
+          <div class="tog on"></div>
+        </div>
+      </div>
+
+      <div class="sec" style="text-align:center">
+        <div style="font-family:'JetBrains Mono';font-size:9px;color:var(--text-muted)">DeployBar v1.0 · Flutter only</div>
+        <div style="font-family:'JetBrains Mono';font-size:9px;color:var(--red);margin-top:6px;cursor:pointer">Quit DeployBar</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
