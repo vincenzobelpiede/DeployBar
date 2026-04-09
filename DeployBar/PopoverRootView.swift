@@ -143,7 +143,19 @@ struct DeployTabView: View {
 
         Divider().background(Color(white: 0.17))
 
-        sectionLabel("Devices · via flutter devices")
+        HStack(spacing: 6) {
+            sectionLabel("Devices · flutter + adb")
+            if deviceManager.isCached {
+                Text("cached")
+                    .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 1)
+                    .background(Color(white: 0.2))
+                    .foregroundStyle(Color(white: 0.55))
+                    .cornerRadius(3)
+            }
+            Spacer()
+        }
         if let err = deviceManager.error {
             errorView(err)
         } else if deviceManager.devices.isEmpty {
@@ -264,6 +276,15 @@ struct DeviceRowView: View {
                     .lineLimit(1)
             }
             Spacer()
+            if device.source == .adbOnly {
+                Text("ADB")
+                    .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(Color(red: 0.96, green: 0.62, blue: 0.04).opacity(0.18))
+                    .foregroundStyle(Color(red: 0.96, green: 0.62, blue: 0.04))
+                    .cornerRadius(4)
+            }
             Text(device.connectionType == .usb ? "USB" : "Wi-Fi")
                 .font(.system(size: 8, weight: .semibold, design: .monospaced))
                 .padding(.horizontal, 6)

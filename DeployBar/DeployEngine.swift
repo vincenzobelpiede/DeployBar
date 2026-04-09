@@ -135,6 +135,17 @@ final class DeployEngine: ObservableObject {
         let built = await runCommand(flutter, args: buildArgs, cwd: projectPath)
         if !built { return false }
 
+        // adb-only devices (wireless Android that flutter doesn't see): install
+        // the freshly built APK directly via adb.
+        if device.source == .adbOnly {
+            guard let adb = Self.findAdb() else {
+                await MainActor.run { self.appendLog("adb not found in PATH", level: .error) }
+                return false
+            }
+            let apkPath = (projectPath as NSString).appendingPathComponent("build/app/outputs/flutter-apk/app-release.apk")
+            return await runCommand(adb, args: ["-s", device.id, "install", "-r", apkPath], cwd: projectPath)
+        }
+
         return await runCommand(flutter, args: ["install", "-d", device.id, "--release"], cwd: projectPath)
     }
 
@@ -256,6 +267,16 @@ final class DeployEngine: ObservableObject {
             return .success
         }
         return .info
+    }
+
+    private static func findAdb() -> String? {
+        let candidates = [
+            "/opt/homebrew/bin/adb",
+            "/usr/local/bin/adb",
+            "\(NSHomeDirectory())/Library/Android/sdk/platform-tools/adb"
+        ]
+        for p in candidates where FileManager.default.isExecutableFile(atPath: p) { return p }
+        return nil
     }
 
     private static func findFlutter() -> String? {
