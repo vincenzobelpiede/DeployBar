@@ -148,14 +148,51 @@ struct HistoryTabView: View {
 }
 
 struct SettingsTabView: View {
+    @AppStorage(StatusIcon.defaultsKey) private var iconName: String = "paperplane.fill"
+
     var body: some View {
-        VStack {
-            Spacer()
-            Text("Settings").foregroundStyle(.secondary)
-            Spacer()
-            Button("Quit DeployBar") { NSApp.terminate(nil) }
-                .foregroundStyle(.red)
-                .padding(.bottom, 16)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("MENU BAR ICON")
+                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(Color(white: 0.44))
+                    .tracking(1.5)
+
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5), spacing: 8) {
+                    ForEach(StatusIcon.options) { opt in
+                        Button {
+                            iconName = opt.id
+                            NotificationCenter.default.post(name: StatusIcon.changedNotification, object: nil)
+                        } label: {
+                            Image(systemName: opt.id)
+                                .font(.system(size: 18))
+                                .frame(width: 44, height: 44)
+                                .background(iconName == opt.id
+                                    ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.18)
+                                    : Color(white: 0.122))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(iconName == opt.id
+                                            ? Color(red: 0.13, green: 0.77, blue: 0.37)
+                                            : Color.clear, lineWidth: 1.5)
+                                )
+                                .foregroundStyle(iconName == opt.id
+                                    ? Color(red: 0.13, green: 0.77, blue: 0.37)
+                                    : Color.white.opacity(0.85))
+                                .cornerRadius(6)
+                        }
+                        .buttonStyle(.plain)
+                        .help(opt.label)
+                    }
+                }
+
+                Spacer(minLength: 24)
+
+                Button("Quit DeployBar") { NSApp.terminate(nil) }
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(12)
         }
     }
 }

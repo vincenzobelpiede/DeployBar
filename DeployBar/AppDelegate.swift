@@ -13,10 +13,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "rocket.fill", accessibilityDescription: "DeployBar")
+            button.imagePosition = .imageLeading
+            button.title = " DB"
+            button.font = .systemFont(ofSize: 12, weight: .semibold)
             button.action = #selector(togglePopover(_:))
             button.target = self
         }
+        applyStatusIcon()
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applyStatusIcon),
+            name: StatusIcon.changedNotification,
+            object: nil
+        )
+    }
+
+    @objc private func applyStatusIcon() {
+        guard let button = statusItem?.button else { return }
+        let name = StatusIcon.current
+        let img = NSImage(systemSymbolName: name, accessibilityDescription: "DeployBar")
+        img?.isTemplate = true
+        button.image = img
     }
 
     @objc private func togglePopover(_ sender: AnyObject?) {
