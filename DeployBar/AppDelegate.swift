@@ -11,6 +11,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var iconState: StatusIconState = .idle
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Enable Launch at Login by default on first run only.
+        let firstRunKey = "launchAtLoginFirstRunDone"
+        if !UserDefaults.standard.bool(forKey: firstRunKey) {
+            LaunchAtLogin.isEnabled = true
+            UserDefaults.standard.set(true, forKey: firstRunKey)
+        }
+
         popover = NSPopover()
         popover.contentSize = NSSize(width: 360, height: 700)
         popover.behavior = .transient
