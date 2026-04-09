@@ -60,7 +60,7 @@ struct PopoverRootView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: 360, height: 520)
+        .frame(width: 360, height: 700)
         .background(Color(red: 0.094, green: 0.094, blue: 0.106))
         .foregroundStyle(.white)
     }
@@ -277,7 +277,7 @@ struct DeviceRowView: View {
                 .cornerRadius(4)
         }
         .padding(.horizontal, 9)
-        .padding(.vertical, 7)
+        .padding(.vertical, 6)
         .background(selected
             ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.05)
             : Color(white: 0.122))
@@ -337,7 +337,7 @@ struct ProjectRowView: View {
             .help("Open in Terminal")
         }
         .padding(.horizontal, 9)
-        .padding(.vertical, 7)
+        .padding(.vertical, 6)
         .background(selected
             ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.05)
             : Color(white: 0.122))
@@ -429,7 +429,7 @@ struct HistoryTabView: View {
                                     .font(.system(size: 10, design: .monospaced))
                             }
                             .padding(.horizontal, 10)
-                            .padding(.vertical, 7)
+                            .padding(.vertical, 6)
                             .background(toastBg(rec.status))
                             .foregroundStyle(toastFg(rec.status))
                             .overlay(
@@ -471,7 +471,7 @@ struct HistoryTabView: View {
                             Spacer()
                         }
                         .padding(.horizontal, 9)
-                        .padding(.vertical, 7)
+                        .padding(.vertical, 6)
                         .background(Color(white: 0.122))
                         .cornerRadius(6)
                     }
@@ -536,7 +536,7 @@ struct SettingsTabView: View {
                             .buttonStyle(.plain)
                         }
                         .padding(.horizontal, 9)
-                        .padding(.vertical, 7)
+                        .padding(.vertical, 6)
                         .background(Color(white: 0.122))
                         .cornerRadius(6)
                     }
@@ -549,7 +549,7 @@ struct SettingsTabView: View {
                             Spacer()
                         }
                         .padding(.horizontal, 9)
-                        .padding(.vertical, 7)
+                        .padding(.vertical, 6)
                         .background(Color(white: 0.122))
                         .cornerRadius(6)
                     }
