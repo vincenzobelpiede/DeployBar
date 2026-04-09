@@ -125,7 +125,24 @@ struct DeployTabView: View {
 
     @ViewBuilder
     private var devicesAndProjectsSection: some View {
-        sectionLabel("Flutter Projects")
+        HStack(spacing: 6) {
+            sectionLabel("Flutter Projects")
+            Spacer()
+            if let ts = projectScanner.lastScanned {
+                Text("scanned \(RelativeTime.short(from: ts)) ago")
+                    .font(.system(size: 8, design: .monospaced))
+                    .foregroundStyle(Color(white: 0.44))
+            }
+            Button {
+                projectScanner.refresh()
+            } label: {
+                Image(systemName: projectScanner.isScanning ? "arrow.2.circlepath" : "arrow.clockwise")
+                    .font(.system(size: 10))
+                    .foregroundStyle(Color(white: 0.55))
+            }
+            .buttonStyle(.plain)
+            .disabled(projectScanner.isScanning)
+        }
         if projectScanner.projects.isEmpty {
             emptyState("No Flutter projects found. Add a folder in Settings.")
         } else {

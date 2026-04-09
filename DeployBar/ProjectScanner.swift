@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import AppKit
 
 struct ScannedProject: Identifiable, Codable, Equatable, Hashable {
     let id: UUID
@@ -9,8 +10,10 @@ struct ScannedProject: Identifiable, Codable, Equatable, Hashable {
 }
 
 @MainActor
-final class ProjectScanner: ObservableObject {
+final class ProjectScanner: NSObject, ObservableObject {
     @Published var projects: [ScannedProject] = []
+    @Published var lastScanned: Date?
+    @Published var isScanning: Bool = false
     @Published var scanDirectories: [String] {
         didSet {
             UserDefaults.standard.set(scanDirectories, forKey: Self.dirsKey)
@@ -19,6 +22,10 @@ final class ProjectScanner: ObservableObject {
     }
 
     static let dirsKey = "scanDirectories"
+    static let cacheKey = "cachedProjects"
+    static let lastScannedKey = "projectsLastScanned"
+
+    private var query: NSMetadataQuery?
 
     static var defaultDirs: [String] {
         [
@@ -27,9 +34,20 @@ final class ProjectScanner: ObservableObject {
         ]
     }
 
-    init() {
+    override init() {
         let saved = UserDefaults.standard.stringArray(forKey: Self.dirsKey)
         self.scanDirectories = saved ?? Self.defaultDirs
+        super.init()
+
+        // Load cached projects instantly so the list is never empty.
+        if let data = UserDefaults.standard.data(forKey: Self.cacheKey),
+           let decoded = try? JSONDecoder().decode([ScannedProject].self, from: data) {
+            self.projects = decoded
+        }
+        if let ts = UserDefaults.standard.object(forKey: Self.lastScannedKey) as? Date {
+            self.lastScanned = ts
+        }
+        // Kick off a background refresh on launch only.
         refresh()
     }
 
@@ -42,58 +60,148 @@ final class ProjectScanner: ObservableObject {
         scanDirectories.removeAll { $0 == path }
     }
 
+    // MARK: - Refresh
+
     func refresh() {
+        guard !isScanning else { return }
+        isScanning = true
+        startSpotlightQuery()
+    }
+
+    private func startSpotlightQuery() {
+        let q = NSMetadataQuery()
+        q.predicate = NSPredicate(format: "kMDItemFSName == %@", "pubspec.yaml")
+        q.searchScopes = scanDirectories.map { NSURL(fileURLWithPath: $0) as URL }
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(spotlightFinished(_:)),
+            name: .NSMetadataQueryDidFinishGathering,
+            object: q
+        )
+        query = q
+        if !q.start() {
+            // Couldn't start — go straight to the shallow fallback.
+            finishWithFallback()
+        }
+    }
+
+    @objc private func spotlightFinished(_ note: Notification) {
+        guard let q = note.object as? NSMetadataQuery else { return }
+        q.disableUpdates()
+        defer {
+            q.stop()
+            NotificationCenter.default.removeObserver(self, name: .NSMetadataQueryDidFinishGathering, object: q)
+            self.query = nil
+        }
+
+        var pubspecPaths: [String] = []
+        for i in 0..<q.resultCount {
+            if let item = q.result(at: i) as? NSMetadataItem,
+               let path = item.value(forAttribute: NSMetadataItemPathKey) as? String {
+                // Restrict to within configured scan dirs (Spotlight scope can leak above).
+                if scanDirectories.contains(where: { path.hasPrefix($0 + "/") }) {
+                    pubspecPaths.append(path)
+                }
+            }
+        }
+
+        if pubspecPaths.isEmpty {
+            // Spotlight returned nothing — likely indexing not ready. Fall back.
+            finishWithFallback()
+            return
+        }
+
         let dirs = scanDirectories
-        Task.detached(priority: .utility) { [weak self] in
-            let found = Self.scan(dirs: dirs)
+        Task.detached(priority: .utility) {
+            let projs = Self.loadProjects(fromPubspecPaths: pubspecPaths)
             await MainActor.run {
-                self?.projects = found
+                self.applyResults(projs, dirs: dirs)
             }
         }
     }
 
-    nonisolated private static func scan(dirs: [String]) -> [ScannedProject] {
+    private func finishWithFallback() {
+        let dirs = scanDirectories
+        Task.detached(priority: .utility) {
+            let pubspecs = Self.shallowScan(dirs: dirs)
+            let projs = Self.loadProjects(fromPubspecPaths: pubspecs)
+            await MainActor.run {
+                self.applyResults(projs, dirs: dirs)
+            }
+        }
+    }
+
+    private func applyResults(_ projs: [ScannedProject], dirs: [String]) {
+        let sorted = projs.sorted { $0.lastModified > $1.lastModified }
+        self.projects = sorted
+        let now = Date()
+        self.lastScanned = now
+        self.isScanning = false
+        if let data = try? JSONEncoder().encode(sorted) {
+            UserDefaults.standard.set(data, forKey: Self.cacheKey)
+        }
+        UserDefaults.standard.set(now, forKey: Self.lastScannedKey)
+    }
+
+    // MARK: - Fallback shallow scan (depth ≤ 2)
+
+    nonisolated private static func shallowScan(dirs: [String]) -> [String] {
         let fm = FileManager.default
-        var results: [ScannedProject] = []
-        var seenPaths = Set<String>()
+        let skip: Set<String> = [
+            "node_modules", ".dart_tool", "build", ".git",
+            "Pods", "DerivedData", "ios/Pods"
+        ]
+        var pubspecs: [String] = []
+
+        func visit(_ path: String, depth: Int) {
+            if depth > 2 { return }
+            let pubspec = (path as NSString).appendingPathComponent("pubspec.yaml")
+            if fm.fileExists(atPath: pubspec) {
+                pubspecs.append(pubspec)
+                return // don't descend into a Flutter project
+            }
+            guard let entries = try? fm.contentsOfDirectory(atPath: path) else { return }
+            for entry in entries {
+                if entry.hasPrefix(".") { continue }
+                if skip.contains(entry) { continue }
+                let child = (path as NSString).appendingPathComponent(entry)
+                var isDir: ObjCBool = false
+                if fm.fileExists(atPath: child, isDirectory: &isDir), isDir.boolValue {
+                    visit(child, depth: depth + 1)
+                }
+            }
+        }
 
         for root in dirs {
             var isDir: ObjCBool = false
-            guard fm.fileExists(atPath: root, isDirectory: &isDir), isDir.boolValue else { continue }
-            walk(path: root, depth: 0, maxDepth: 3, fm: fm) { dir in
-                let pubspec = (dir as NSString).appendingPathComponent("pubspec.yaml")
-                if fm.fileExists(atPath: pubspec), !seenPaths.contains(dir) {
-                    seenPaths.insert(dir)
-                    if let proj = loadProject(dir: dir, pubspec: pubspec) {
-                        results.append(proj)
-                    }
-                    return false // don't recurse into a Flutter project
-                }
-                return true
+            if fm.fileExists(atPath: root, isDirectory: &isDir), isDir.boolValue {
+                visit(root, depth: 0)
             }
         }
-
-        return results.sorted { $0.lastModified > $1.lastModified }
+        return pubspecs
     }
 
-    nonisolated private static func walk(path: String, depth: Int, maxDepth: Int, fm: FileManager, visit: (String) -> Bool) {
-        if depth > maxDepth { return }
-        let shouldRecurse = visit(path)
-        guard shouldRecurse, depth < maxDepth else { return }
-        guard let entries = try? fm.contentsOfDirectory(atPath: path) else { return }
-        for entry in entries {
-            if entry.hasPrefix(".") { continue }
-            if ["node_modules", "build", "Pods", "DerivedData", ".git", ".dart_tool"].contains(entry) { continue }
-            let child = (path as NSString).appendingPathComponent(entry)
-            var isDir: ObjCBool = false
-            if fm.fileExists(atPath: child, isDirectory: &isDir), isDir.boolValue {
-                walk(path: child, depth: depth + 1, maxDepth: maxDepth, fm: fm, visit: visit)
+    // MARK: - Project loading
+
+    nonisolated private static func loadProjects(fromPubspecPaths pubspecs: [String]) -> [ScannedProject] {
+        var seen = Set<String>()
+        var results: [ScannedProject] = []
+        for pubspec in pubspecs {
+            let dir = (pubspec as NSString).deletingLastPathComponent
+            if seen.contains(dir) { continue }
+            seen.insert(dir)
+            if let proj = loadProject(dir: dir, pubspec: pubspec) {
+                results.append(proj)
             }
         }
+        return results
     }
 
     nonisolated private static func loadProject(dir: String, pubspec: String) -> ScannedProject? {
         guard let content = try? String(contentsOfFile: pubspec, encoding: .utf8) else { return nil }
+        // Skip non-Flutter pubspecs (no flutter dependency block) — keeps the list tight.
+        let isFlutter = content.contains("flutter:") || content.contains("sdk: flutter")
+        guard isFlutter else { return nil }
         let name = extractName(from: content) ?? (dir as NSString).lastPathComponent
         let lastMod = latestDartMTime(in: (dir as NSString).appendingPathComponent("lib"))
             ?? (try? FileManager.default.attributesOfItem(atPath: pubspec)[.modificationDate] as? Date)
