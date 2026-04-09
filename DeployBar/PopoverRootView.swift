@@ -14,6 +14,7 @@ struct PopoverRootView: View {
     @EnvironmentObject var deployEngine: DeployEngine
     @AppStorage("lastProjectPath") private var lastProjectPath: String = ""
     @AppStorage("lastDeviceId") private var lastDeviceId: String = ""
+    @State private var showingPair: Bool = false
 
     private var flutterMissing: Bool {
         if case .flutterNotFound = deviceManager.error { return true }
@@ -49,11 +50,17 @@ struct PopoverRootView: View {
                 case .deploy:
                     DeployTabView(
                         selectedProjectPath: $lastProjectPath,
-                        selectedDeviceId: $lastDeviceId
+                        selectedDeviceId: $lastDeviceId,
+                        showingPair: $showingPair
                     )
                         .environmentObject(deviceManager)
                         .environmentObject(projectScanner)
                         .environmentObject(deployEngine)
+                        .sheet(isPresented: $showingPair) {
+                            PairAndroidView {
+                                deviceManager.refresh()
+                            }
+                        }
                 case .history: HistoryTabView().environmentObject(deployEngine)
                 case .settings: SettingsTabView().environmentObject(projectScanner)
                 }
@@ -72,6 +79,7 @@ struct DeployTabView: View {
     @EnvironmentObject var deployEngine: DeployEngine
     @Binding var selectedProjectPath: String
     @Binding var selectedDeviceId: String
+    @Binding var showingPair: Bool
 
     private var selectedProject: ScannedProject? {
         projectScanner.projects.first { $0.path == selectedProjectPath }
@@ -189,6 +197,22 @@ struct DeployTabView: View {
                 }
             }
         }
+        Button {
+            showingPair = true
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "plus.circle.fill")
+                Text("Pair Android over Wi-Fi")
+                    .font(.system(size: 11, weight: .semibold))
+                Spacer()
+            }
+            .padding(.horizontal, 9)
+            .padding(.vertical, 6)
+            .background(Color(white: 0.122))
+            .cornerRadius(6)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(Color(red: 0.13, green: 0.77, blue: 0.37))
     }
 
     @ViewBuilder
