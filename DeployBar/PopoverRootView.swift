@@ -567,7 +567,7 @@ struct HistoryTabView: View {
 }
 
 struct SettingsTabView: View {
-    @AppStorage(StatusIcon.defaultsKey) private var iconName: String = "hammer.fill"
+    @AppStorage(StatusIcon.defaultsKey) private var iconName: String = StatusIcon.customAssetId
     @AppStorage("notifyOnComplete") private var notifyOnComplete: Bool = true
     @AppStorage("defaultBuildMode") private var defaultBuildMode: String = "release"
     @State private var launchAtLogin: Bool = LaunchAtLogin.isEnabled
@@ -651,10 +651,20 @@ struct SettingsTabView: View {
                             iconName = opt.id
                             NotificationCenter.default.post(name: StatusIcon.changedNotification, object: nil)
                         } label: {
-                            Image(systemName: opt.id)
-                                .font(.system(size: 18))
-                                .frame(width: 44, height: 44)
-                                .background(iconName == opt.id
+                            Group {
+                                if opt.id == StatusIcon.customAssetId {
+                                    Image(StatusIcon.customAssetName)
+                                        .resizable()
+                                        .renderingMode(.template)
+                                        .interpolation(.high)
+                                        .frame(width: 22, height: 22)
+                                } else {
+                                    Image(systemName: opt.id)
+                                        .font(.system(size: 18))
+                                }
+                            }
+                            .frame(width: 44, height: 44)
+                            .background(iconName == opt.id
                                     ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.18)
                                     : Color(white: 0.122))
                                 .overlay(

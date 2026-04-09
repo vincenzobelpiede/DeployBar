@@ -9,7 +9,11 @@ enum StatusIcon {
     static let defaultsKey = "statusIconName"
     static let changedNotification = Notification.Name("DeployBar.statusIconChanged")
 
+    static let customAssetName = "MenuBarIcon"
+    static let customAssetId = "deploybar.menuicon"
+
     static let options: [StatusIconOption] = [
+        .init(id: customAssetId, label: "DeployBar"),
         .init(id: "paperplane.fill", label: "Paper Plane"),
         .init(id: "arrow.up.forward.app.fill", label: "App Launch"),
         .init(id: "shippingbox.fill", label: "Shipping Box"),
@@ -23,6 +27,6 @@ enum StatusIcon {
     ]
 
     static var current: String {
-        UserDefaults.standard.string(forKey: defaultsKey) ?? "hammer.fill"
+        UserDefaults.standard.string(forKey: defaultsKey) ?? customAssetId
     }
 }

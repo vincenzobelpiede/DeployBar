@@ -61,13 +61,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func applyStatusIcon() {
         guard let button = statusItem?.button else { return }
-        let name: String
+        let img: NSImage?
         switch iconState {
-        case .idle: name = StatusIcon.current
-        case .deploying: name = "arrow.2.circlepath"
-        case .failed: name = "xmark.circle.fill"
+        case .idle:
+            let name = StatusIcon.current
+            if name == StatusIcon.customAssetId {
+                img = NSImage(named: StatusIcon.customAssetName)
+            } else {
+                img = NSImage(systemSymbolName: name, accessibilityDescription: "DeployBar")
+            }
+        case .deploying:
+            img = NSImage(systemSymbolName: "arrow.2.circlepath", accessibilityDescription: "Deploying")
+        case .failed:
+            img = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: "Failed")
         }
-        let img = NSImage(systemSymbolName: name, accessibilityDescription: "DeployBar")
         img?.isTemplate = true
         button.image = img
     }
