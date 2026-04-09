@@ -1,9 +1,14 @@
 import AppKit
 import SwiftUI
 
+enum StatusIconState {
+    case idle, deploying, failed
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
+    private var iconState: StatusIconState = .idle
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         popover = NSPopover()
@@ -25,11 +30,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             name: StatusIcon.changedNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            forName: Notification.Name("DeployBar.iconStateChanged"),
+            object: nil,
+            queue: .main
+        ) { [weak self] note in
+            if let raw = note.userInfo?["state"] as? String {
+                switch raw {
+                case "deploying": self?.iconState = .deploying
+                case "failed": self?.iconState = .failed
+                default: self?.iconState = .idle
+                }
+                self?.applyStatusIcon()
+            }
+        }
     }
 
     @objc private func applyStatusIcon() {
         guard let button = statusItem?.button else { return }
-        let name = StatusIcon.current
+        let name: String
+        switch iconState {
+        case .idle: name = StatusIcon.current
+        case .deploying: name = "arrow.2.circlepath"
+        case .failed: name = "xmark.circle.fill"
+        }
         let img = NSImage(systemSymbolName: name, accessibilityDescription: "DeployBar")
         img?.isTemplate = true
         button.image = img

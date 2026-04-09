@@ -10,6 +10,7 @@
 		1E3CD879785EA8E6CD6FA636 /* StatusIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A033401E92346A46CE6103B7 /* StatusIcon.swift */; };
 		2B7B08B5B24A33807DED4E82 /* DeployEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30BC71CE991E1A25320E1CE9 /* DeployEngine.swift */; };
 		32D8E850E70A35D53B7863D6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50F128CEC831EFAF612AA4DF /* AppDelegate.swift */; };
+		4481ECB7962CAD7204D47FA9 /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39972C1F34FB2A6B878EA246 /* LaunchAtLogin.swift */; };
 		572318E9F9FD5E7F502D89ED /* PopoverRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FAFF3261278E2222ADF955 /* PopoverRootView.swift */; };
 		6B7A2C9017CB6A89466595C1 /* DeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E07FB296B50EAF16689E0FB /* DeviceManager.swift */; };
 		EBC5AEB2D588C7D66EDD6716 /* ProjectScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224DA1247A788BDCBDE0FD63 /* ProjectScanner.swift */; };
@@ -19,6 +20,7 @@
 /* Begin PBXFileReference section */
 		224DA1247A788BDCBDE0FD63 /* ProjectScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectScanner.swift; sourceTree = "<group>"; };
 		30BC71CE991E1A25320E1CE9 /* DeployEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeployEngine.swift; sourceTree = "<group>"; };
+		39972C1F34FB2A6B878EA246 /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
 		50F128CEC831EFAF612AA4DF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		51FAFF3261278E2222ADF955 /* PopoverRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverRootView.swift; sourceTree = "<group>"; };
 		7E07FB296B50EAF16689E0FB /* DeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManager.swift; sourceTree = "<group>"; };
@@ -53,6 +55,7 @@
 				30BC71CE991E1A25320E1CE9 /* DeployEngine.swift */,
 				7E07FB296B50EAF16689E0FB /* DeviceManager.swift */,
 				8A5455E1C4EB61240DA56365 /* Info.plist */,
+				39972C1F34FB2A6B878EA246 /* LaunchAtLogin.swift */,
 				51FAFF3261278E2222ADF955 /* PopoverRootView.swift */,
 				224DA1247A788BDCBDE0FD63 /* ProjectScanner.swift */,
 				A033401E92346A46CE6103B7 /* StatusIcon.swift */,
@@ -123,6 +126,7 @@
 				F490B46C416C421A1E4E265B /* DeployBarApp.swift in Sources */,
 				2B7B08B5B24A33807DED4E82 /* DeployEngine.swift in Sources */,
 				6B7A2C9017CB6A89466595C1 /* DeviceManager.swift in Sources */,
+				4481ECB7962CAD7204D47FA9 /* LaunchAtLogin.swift in Sources */,
 				572318E9F9FD5E7F502D89ED /* PopoverRootView.swift in Sources */,
 				EBC5AEB2D588C7D66EDD6716 /* ProjectScanner.swift in Sources */,
 				1E3CD879785EA8E6CD6FA636 /* StatusIcon.swift in Sources */,

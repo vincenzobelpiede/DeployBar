@@ -45,6 +45,14 @@ final class DeployEngine: ObservableObject {
         requestNotificationAuthIfNeeded()
     }
 
+    private func postIconState(_ state: String) {
+        NotificationCenter.default.post(
+            name: Notification.Name("DeployBar.iconStateChanged"),
+            object: nil,
+            userInfo: ["state": state]
+        )
+    }
+
     // MARK: - Public
 
     func deploy(project: ScannedProject, devices: [ConnectedDevice]) {
@@ -54,6 +62,7 @@ final class DeployEngine: ObservableObject {
         logLines.removeAll()
         totalSteps = devices.count
         currentStep = 0
+        postIconState("deploying")
 
         let startTime = Date()
         let deviceNames = devices.map(\.name)
@@ -98,6 +107,7 @@ final class DeployEngine: ObservableObject {
                 self.isDeploying = false
                 self.currentProcess = nil
                 self.notifyComplete(record)
+                self.postIconState(record.status == .success ? "idle" : "failed")
             }
         }
     }
@@ -247,6 +257,7 @@ final class DeployEngine: ObservableObject {
     }
 
     private func notifyComplete(_ record: DeployRecord) {
+        guard UserDefaults.standard.object(forKey: "notifyOnComplete") as? Bool ?? true else { return }
         let content = UNMutableNotificationContent()
         switch record.status {
         case .success:

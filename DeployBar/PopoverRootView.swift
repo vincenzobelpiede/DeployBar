@@ -15,8 +15,25 @@ struct PopoverRootView: View {
     @AppStorage("lastProjectPath") private var lastProjectPath: String = ""
     @AppStorage("lastDeviceId") private var lastDeviceId: String = ""
 
+    private var flutterMissing: Bool {
+        if case .flutterNotFound = deviceManager.error { return true }
+        return false
+    }
+
     var body: some View {
         VStack(spacing: 0) {
+            if flutterMissing {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                    Text("Flutter not found in PATH")
+                        .font(.system(size: 11, weight: .semibold))
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color(red: 0.96, green: 0.62, blue: 0.04).opacity(0.15))
+                .foregroundStyle(Color(red: 0.96, green: 0.62, blue: 0.04))
+            }
             Picker("", selection: $tab) {
                 ForEach(DeployTab.allCases) { t in
                     Text(t.rawValue).tag(t)
@@ -288,41 +305,49 @@ struct ProjectRowView: View {
     let onTap: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 9) {
-                Text("FLT")
-                    .font(.system(size: 8, weight: .bold, design: .monospaced))
-                    .frame(width: 30)
-                    .padding(.vertical, 3)
-                    .background(Color(red: 0.23, green: 0.51, blue: 0.96).opacity(0.15))
-                    .foregroundStyle(Color(red: 0.23, green: 0.51, blue: 0.96))
-                    .cornerRadius(4)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(project.name)
-                        .font(.system(size: 12, weight: .semibold))
-                        .lineLimit(1)
-                    Text(shortenPath(project.path))
-                        .font(.system(size: 9, design: .monospaced))
-                        .foregroundStyle(Color(white: 0.44))
-                        .lineLimit(1)
-                }
-                Spacer()
-                Text(RelativeTime.short(from: project.lastModified))
+        HStack(spacing: 9) {
+            Text("FLT")
+                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .frame(width: 30)
+                .padding(.vertical, 3)
+                .background(Color(red: 0.23, green: 0.51, blue: 0.96).opacity(0.15))
+                .foregroundStyle(Color(red: 0.23, green: 0.51, blue: 0.96))
+                .cornerRadius(4)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(project.name)
+                    .font(.system(size: 12, weight: .semibold))
+                    .lineLimit(1)
+                Text(shortenPath(project.path))
                     .font(.system(size: 9, design: .monospaced))
                     .foregroundStyle(Color(white: 0.44))
+                    .lineLimit(1)
             }
-            .padding(.horizontal, 9)
-            .padding(.vertical, 7)
-            .background(selected
-                ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.05)
-                : Color(white: 0.122))
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(selected ? Color(red: 0.13, green: 0.77, blue: 0.37) : Color.clear, lineWidth: 1)
-            )
-            .cornerRadius(6)
+            Spacer()
+            Text(RelativeTime.short(from: project.lastModified))
+                .font(.system(size: 9, design: .monospaced))
+                .foregroundStyle(Color(white: 0.44))
+            Button {
+                openInTerminal(project.path)
+            } label: {
+                Image(systemName: "terminal")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color(white: 0.55))
+            }
+            .buttonStyle(.plain)
+            .help("Open in Terminal")
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 7)
+        .background(selected
+            ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.05)
+            : Color(white: 0.122))
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(selected ? Color(red: 0.13, green: 0.77, blue: 0.37) : Color.clear, lineWidth: 1)
+        )
+        .cornerRadius(6)
+        .contentShape(Rectangle())
+        .onTapGesture { onTap() }
         .foregroundStyle(.white)
     }
 
@@ -330,6 +355,14 @@ struct ProjectRowView: View {
         let home = NSHomeDirectory()
         if path.hasPrefix(home) { return "~" + path.dropFirst(home.count) }
         return path
+    }
+
+    private func openInTerminal(_ path: String) {
+        let script = "tell application \"Terminal\" to do script \"cd \\\"\(path)\\\"\"\ntell application \"Terminal\" to activate"
+        if let src = NSAppleScript(source: script) {
+            var err: NSDictionary?
+            src.executeAndReturnError(&err)
+        }
     }
 }
 
@@ -378,9 +411,40 @@ struct LogView: View {
 struct HistoryTabView: View {
     @EnvironmentObject var deployEngine: DeployEngine
 
+    private var recentThree: [DeployRecord] { Array(deployEngine.history.prefix(3)) }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                if !recentThree.isEmpty {
+                    VStack(spacing: 5) {
+                        ForEach(recentThree) { rec in
+                            HStack(spacing: 8) {
+                                Text(rec.status == .success ? "✅" : rec.status == .failed ? "❌" : "⏹")
+                                Text("\(rec.projectName) → \(rec.deviceNames.joined(separator: ", "))")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .lineLimit(1)
+                                Spacer()
+                                Text("\(Int(rec.duration))s")
+                                    .font(.system(size: 10, design: .monospaced))
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 7)
+                            .background(toastBg(rec.status))
+                            .foregroundStyle(toastFg(rec.status))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(toastFg(rec.status).opacity(0.25), lineWidth: 1)
+                            )
+                            .cornerRadius(6)
+                        }
+                    }
+                    Divider().background(Color(white: 0.17))
+                    Text("ALL DEPLOYS")
+                        .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(Color(white: 0.44))
+                        .tracking(1.5)
+                }
                 if deployEngine.history.isEmpty {
                     Text("No deploys yet")
                         .font(.system(size: 12))
@@ -433,10 +497,18 @@ struct HistoryTabView: View {
         case .cancelled: Color(white: 0.5)
         }
     }
+
+    private func toastBg(_ s: DeployRecord.Status) -> Color {
+        badgeColor(s).opacity(0.15)
+    }
+    private func toastFg(_ s: DeployRecord.Status) -> Color { badgeColor(s) }
 }
 
 struct SettingsTabView: View {
     @AppStorage(StatusIcon.defaultsKey) private var iconName: String = "hammer.fill"
+    @AppStorage("notifyOnComplete") private var notifyOnComplete: Bool = true
+    @AppStorage("defaultBuildMode") private var defaultBuildMode: String = "release"
+    @State private var launchAtLogin: Bool = LaunchAtLogin.isEnabled
     @EnvironmentObject var projectScanner: ProjectScanner
 
     var body: some View {
@@ -484,6 +556,27 @@ struct SettingsTabView: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(Color(red: 0.13, green: 0.77, blue: 0.37))
                 }
+
+                Text("BUILD & NOTIFICATIONS")
+                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(Color(white: 0.44))
+                    .tracking(1.5)
+                VStack(spacing: 5) {
+                    Toggle("Notify on complete", isOn: $notifyOnComplete)
+                        .font(.system(size: 11))
+                    Toggle("Launch at login", isOn: $launchAtLogin)
+                        .font(.system(size: 11))
+                        .onChange(of: launchAtLogin) { _, v in LaunchAtLogin.isEnabled = v }
+                    Picker("Default build mode", selection: $defaultBuildMode) {
+                        Text("release").tag("release")
+                        Text("debug").tag("debug")
+                    }
+                    .font(.system(size: 11))
+                }
+                .toggleStyle(.switch)
+                .padding(9)
+                .background(Color(white: 0.122))
+                .cornerRadius(6)
 
                 Text("MENU BAR ICON")
                     .font(.system(size: 9, weight: .semibold, design: .monospaced))
