@@ -57,6 +57,15 @@ final class DeployEngine: ObservableObject {
 
     func deploy(project: ScannedProject, devices: [ConnectedDevice]) {
         guard !isDeploying, !devices.isEmpty else { return }
+
+        // First-run quarantine check: clear Gatekeeper flags on the Flutter SDK
+        // so users don't get hit by impellerc/font-subset/gen_snapshot prompts.
+        if let flutter = Self.findFlutter() {
+            if !QuarantineHelper.ensureClearedBeforeDeploy(flutterBinary: flutter) {
+                return
+            }
+        }
+
         isDeploying = true
         cancelled = false
         logLines.removeAll()

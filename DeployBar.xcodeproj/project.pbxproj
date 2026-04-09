@@ -13,6 +13,7 @@
 		4481ECB7962CAD7204D47FA9 /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39972C1F34FB2A6B878EA246 /* LaunchAtLogin.swift */; };
 		4C578D696D123194F0C5D305 /* PairAndroidView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A25AB70480572FCB6F9429B /* PairAndroidView.swift */; };
 		572318E9F9FD5E7F502D89ED /* PopoverRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FAFF3261278E2222ADF955 /* PopoverRootView.swift */; };
+		615140BFBA431051DAB89861 /* QuarantineHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFAFC0F65AAA722AB87AC48 /* QuarantineHelper.swift */; };
 		6B7A2C9017CB6A89466595C1 /* DeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E07FB296B50EAF16689E0FB /* DeviceManager.swift */; };
 		BBE033981933AEB8E6052204 /* DeployStatusWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6203590A2B16EFB417E98B73 /* DeployStatusWindow.swift */; };
 		CC165BF8EEAE82A96A44CE7B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CB9D4EBA17ACC04E8F2C9252 /* Assets.xcassets */; };
@@ -30,6 +31,7 @@
 		6203590A2B16EFB417E98B73 /* DeployStatusWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeployStatusWindow.swift; sourceTree = "<group>"; };
 		7E07FB296B50EAF16689E0FB /* DeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManager.swift; sourceTree = "<group>"; };
 		8A5455E1C4EB61240DA56365 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8AFAFC0F65AAA722AB87AC48 /* QuarantineHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuarantineHelper.swift; sourceTree = "<group>"; };
 		A033401E92346A46CE6103B7 /* StatusIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusIcon.swift; sourceTree = "<group>"; };
 		CB9D4EBA17ACC04E8F2C9252 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DD43A2A6C53DEA9D5514D087 /* DeployBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeployBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -67,6 +69,7 @@
 				5A25AB70480572FCB6F9429B /* PairAndroidView.swift */,
 				51FAFF3261278E2222ADF955 /* PopoverRootView.swift */,
 				224DA1247A788BDCBDE0FD63 /* ProjectScanner.swift */,
+				8AFAFC0F65AAA722AB87AC48 /* QuarantineHelper.swift */,
 				A033401E92346A46CE6103B7 /* StatusIcon.swift */,
 			);
 			path = DeployBar;
@@ -152,6 +155,7 @@
 				4C578D696D123194F0C5D305 /* PairAndroidView.swift in Sources */,
 				572318E9F9FD5E7F502D89ED /* PopoverRootView.swift in Sources */,
 				EBC5AEB2D588C7D66EDD6716 /* ProjectScanner.swift in Sources */,
+				615140BFBA431051DAB89861 /* QuarantineHelper.swift in Sources */,
 				1E3CD879785EA8E6CD6FA636 /* StatusIcon.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
