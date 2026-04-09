@@ -140,7 +140,7 @@ final class DeployEngine: ObservableObject {
 
     private func runCommand(_ launchPath: String, args: [String], cwd: String) async -> Bool {
         await MainActor.run {
-            self.appendLog("$ \((launchPath as NSString).lastPathComponent) \(args.joined(separator: " "))", level: .info)
+            self.appendLog("$ \((launchPath as NSString).lastPathComponent) \(args.joined(separator: " ")) (cwd: \((cwd as NSString).lastPathComponent))", level: .info)
         }
 
         return await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
@@ -149,12 +149,42 @@ final class DeployEngine: ObservableObject {
             process.arguments = args
             process.currentDirectoryPath = cwd
 
+            // GUI-launched apps inherit a stripped PATH from LaunchServices
+            // (/usr/bin:/bin:/usr/sbin:/sbin). flutter build ios needs xcrun,
+            // pod, git, ruby, and flutter itself on PATH — otherwise the build
+            // stalls silently. Reconstruct a full developer PATH here.
+            var env = ProcessInfo.processInfo.environment
+            let flutterDir = (launchPath as NSString).deletingLastPathComponent
+            let extraPath = [
+                flutterDir,
+                "/opt/homebrew/bin",
+                "/opt/homebrew/sbin",
+                "/usr/local/bin",
+                "/usr/bin",
+                "/bin",
+                "/usr/sbin",
+                "/sbin",
+                "\(NSHomeDirectory())/.pub-cache/bin",
+                "\(NSHomeDirectory())/.gem/ruby/bin"
+            ].joined(separator: ":")
+            if let existing = env["PATH"], !existing.isEmpty {
+                env["PATH"] = "\(extraPath):\(existing)"
+            } else {
+                env["PATH"] = extraPath
+            }
+            env["HOME"] = NSHomeDirectory()
+            // Force flutter to use ANSI-free output so we log clean lines
+            env["TERM"] = "dumb"
+            process.environment = env
+
             let outPipe = Pipe()
             let errPipe = Pipe()
             process.standardOutput = outPipe
             process.standardError = errPipe
+            // Close stdin explicitly so tools that check isatty don't hang
+            process.standardInput = FileHandle.nullDevice
 
-            let handleData: (FileHandle) -> Void = { [weak self] handle in
+            let handleData: @Sendable (FileHandle) -> Void = { [weak self] handle in
                 let data = handle.availableData
                 guard !data.isEmpty, let text = String(data: data, encoding: .utf8) else { return }
                 let lines = text.split(whereSeparator: { $0 == "\n" || $0 == "\r" })
@@ -171,8 +201,27 @@ final class DeployEngine: ObservableObject {
             errPipe.fileHandleForReading.readabilityHandler = handleData
 
             process.terminationHandler = { proc in
+                // Drain whatever is left before tearing down the pipes so we
+                // don't lose the final lines (including error messages).
                 outPipe.fileHandleForReading.readabilityHandler = nil
                 errPipe.fileHandleForReading.readabilityHandler = nil
+                let tailOut = (try? outPipe.fileHandleForReading.readToEnd()) ?? Data()
+                let tailErr = (try? errPipe.fileHandleForReading.readToEnd()) ?? Data()
+                for tail in [tailOut, tailErr] {
+                    if !tail.isEmpty, let text = String(data: tail, encoding: .utf8) {
+                        let lines = text.split(whereSeparator: { $0 == "\n" || $0 == "\r" })
+                        Task { @MainActor [weak self] in
+                            for line in lines {
+                                let trimmed = String(line).trimmingCharacters(in: .whitespaces)
+                                guard !trimmed.isEmpty else { continue }
+                                self?.appendLog(trimmed, level: Self.classify(trimmed))
+                            }
+                        }
+                    }
+                }
+                Task { @MainActor [weak self] in
+                    self?.appendLog("→ exit \(proc.terminationStatus)", level: proc.terminationStatus == 0 ? .success : .error)
+                }
                 continuation.resume(returning: proc.terminationStatus == 0)
             }
 
