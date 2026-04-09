@@ -9,12 +9,14 @@
 /* Begin PBXBuildFile section */
 		32D8E850E70A35D53B7863D6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50F128CEC831EFAF612AA4DF /* AppDelegate.swift */; };
 		572318E9F9FD5E7F502D89ED /* PopoverRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FAFF3261278E2222ADF955 /* PopoverRootView.swift */; };
+		6B7A2C9017CB6A89466595C1 /* DeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E07FB296B50EAF16689E0FB /* DeviceManager.swift */; };
 		F490B46C416C421A1E4E265B /* DeployBarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED0A4A6C4E0346174AF8482 /* DeployBarApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		50F128CEC831EFAF612AA4DF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		51FAFF3261278E2222ADF955 /* PopoverRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverRootView.swift; sourceTree = "<group>"; };
+		7E07FB296B50EAF16689E0FB /* DeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManager.swift; sourceTree = "<group>"; };
 		8A5455E1C4EB61240DA56365 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		DD43A2A6C53DEA9D5514D087 /* DeployBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeployBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FED0A4A6C4E0346174AF8482 /* DeployBarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeployBarApp.swift; sourceTree = "<group>"; };
@@ -42,6 +44,7 @@
 			children = (
 				50F128CEC831EFAF612AA4DF /* AppDelegate.swift */,
 				FED0A4A6C4E0346174AF8482 /* DeployBarApp.swift */,
+				7E07FB296B50EAF16689E0FB /* DeviceManager.swift */,
 				8A5455E1C4EB61240DA56365 /* Info.plist */,
 				51FAFF3261278E2222ADF955 /* PopoverRootView.swift */,
 			);
@@ -109,6 +112,7 @@
 			files = (
 				32D8E850E70A35D53B7863D6 /* AppDelegate.swift in Sources */,
 				F490B46C416C421A1E4E265B /* DeployBarApp.swift in Sources */,
+				6B7A2C9017CB6A89466595C1 /* DeviceManager.swift in Sources */,
 				572318E9F9FD5E7F502D89ED /* PopoverRootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
