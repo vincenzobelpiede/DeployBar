@@ -11,6 +11,7 @@ struct PopoverRootView: View {
     @State private var tab: DeployTab = .deploy
     @StateObject private var deviceManager = DeviceManager()
     @StateObject private var projectScanner = ProjectScanner()
+    @StateObject private var deployEngine = DeployEngine()
     @State private var selectedProjectId: UUID?
 
     var body: some View {
@@ -31,7 +32,8 @@ struct PopoverRootView: View {
                     DeployTabView(selectedProjectId: $selectedProjectId)
                         .environmentObject(deviceManager)
                         .environmentObject(projectScanner)
-                case .history: HistoryTabView()
+                        .environmentObject(deployEngine)
+                case .history: HistoryTabView().environmentObject(deployEngine)
                 case .settings: SettingsTabView().environmentObject(projectScanner)
                 }
             }
@@ -46,45 +48,111 @@ struct PopoverRootView: View {
 struct DeployTabView: View {
     @EnvironmentObject var deviceManager: DeviceManager
     @EnvironmentObject var projectScanner: ProjectScanner
+    @EnvironmentObject var deployEngine: DeployEngine
     @Binding var selectedProjectId: UUID?
 
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                sectionLabel("Devices · via flutter devices")
+    private var selectedProject: ScannedProject? {
+        projectScanner.projects.first { $0.id == selectedProjectId }
+    }
 
-                if let err = deviceManager.error {
-                    errorView(err)
-                } else if deviceManager.devices.isEmpty {
-                    emptyState("Plug in or pair a device")
-                } else {
-                    VStack(spacing: 5) {
-                        ForEach(deviceManager.devices) { d in
-                            DeviceRowView(device: d)
-                        }
+    var body: some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    if deployEngine.isDeploying {
+                        deployingSection
+                    } else {
+                        devicesAndProjectsSection
                     }
                 }
+                .padding(12)
+            }
 
-                Divider().background(Color(white: 0.17))
+            Divider().background(Color(white: 0.17))
+            deployButtonBar
+                .padding(12)
+        }
+    }
 
-                sectionLabel("Flutter Projects")
+    @ViewBuilder
+    private var devicesAndProjectsSection: some View {
+        sectionLabel("Devices · via flutter devices")
+        if let err = deviceManager.error {
+            errorView(err)
+        } else if deviceManager.devices.isEmpty {
+            emptyState("Plug in or pair a device")
+        } else {
+            VStack(spacing: 5) {
+                ForEach(deviceManager.devices) { d in
+                    DeviceRowView(device: d)
+                }
+            }
+        }
 
-                if projectScanner.projects.isEmpty {
-                    emptyState("No Flutter projects found. Add a folder in Settings.")
-                } else {
-                    VStack(spacing: 5) {
-                        ForEach(projectScanner.projects) { p in
-                            ProjectRowView(
-                                project: p,
-                                selected: selectedProjectId == p.id
-                            ) {
-                                selectedProjectId = p.id
-                            }
-                        }
+        Divider().background(Color(white: 0.17))
+
+        sectionLabel("Flutter Projects")
+        if projectScanner.projects.isEmpty {
+            emptyState("No Flutter projects found. Add a folder in Settings.")
+        } else {
+            VStack(spacing: 5) {
+                ForEach(projectScanner.projects) { p in
+                    ProjectRowView(
+                        project: p,
+                        selected: selectedProjectId == p.id
+                    ) {
+                        selectedProjectId = p.id
                     }
                 }
             }
-            .padding(12)
+        }
+    }
+
+    @ViewBuilder
+    private var deployingSection: some View {
+        sectionLabel("Step \(deployEngine.currentStep)/\(deployEngine.totalSteps) · \(deployEngine.currentDeviceName)")
+        ProgressView()
+            .progressViewStyle(.linear)
+            .tint(Color(red: 0.13, green: 0.77, blue: 0.37))
+        LogView(lines: deployEngine.logLines)
+    }
+
+    @ViewBuilder
+    private var deployButtonBar: some View {
+        if deployEngine.isDeploying {
+            Button {
+                deployEngine.cancel()
+            } label: {
+                Text("⏹ Cancel")
+                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color(red: 0.94, green: 0.27, blue: 0.27).opacity(0.15))
+                    .foregroundStyle(Color(red: 0.94, green: 0.27, blue: 0.27))
+                    .cornerRadius(6)
+            }
+            .buttonStyle(.plain)
+        } else {
+            let canDeploy = selectedProject != nil && !deviceManager.devices.isEmpty
+            Button {
+                guard let proj = selectedProject else { return }
+                deployEngine.deploy(project: proj, devices: deviceManager.devices)
+            } label: {
+                Text(canDeploy
+                     ? "🚀 Deploy → \(deviceManager.devices.map(\.name).joined(separator: ", "))"
+                     : "Select a project and connect a device")
+                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(canDeploy
+                        ? Color(red: 0.13, green: 0.77, blue: 0.37)
+                        : Color(white: 0.2))
+                    .foregroundStyle(canDeploy ? Color.black : Color(white: 0.5))
+                    .cornerRadius(6)
+            }
+            .buttonStyle(.plain)
+            .disabled(!canDeploy)
         }
     }
 
@@ -216,12 +284,104 @@ struct ProjectRowView: View {
     }
 }
 
-struct HistoryTabView: View {
+struct LogView: View {
+    let lines: [LogLine]
+
     var body: some View {
-        VStack {
-            Spacer()
-            Text("History").foregroundStyle(.secondary)
-            Spacer()
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(lines) { line in
+                        HStack(alignment: .top, spacing: 6) {
+                            Text(line.timestamp)
+                                .foregroundStyle(Color(white: 0.44))
+                            Text(line.text)
+                                .foregroundStyle(colorFor(line.level))
+                        }
+                        .font(.system(size: 9, design: .monospaced))
+                        .id(line.id)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(8)
+            }
+            .frame(maxHeight: 220)
+            .background(Color(white: 0.067))
+            .cornerRadius(6)
+            .onChange(of: lines.count) { _, _ in
+                if let last = lines.last {
+                    withAnimation { proxy.scrollTo(last.id, anchor: .bottom) }
+                }
+            }
+        }
+    }
+
+    private func colorFor(_ level: LogLevel) -> Color {
+        switch level {
+        case .info: return Color(white: 0.75)
+        case .success: return Color(red: 0.13, green: 0.77, blue: 0.37)
+        case .warning: return Color(red: 0.96, green: 0.62, blue: 0.04)
+        case .error: return Color(red: 0.94, green: 0.27, blue: 0.27)
+        }
+    }
+}
+
+struct HistoryTabView: View {
+    @EnvironmentObject var deployEngine: DeployEngine
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                if deployEngine.history.isEmpty {
+                    Text("No deploys yet")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 40)
+                } else {
+                    ForEach(deployEngine.history) { rec in
+                        HStack(spacing: 9) {
+                            Text(badgeText(rec.status))
+                                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                .frame(width: 30, height: 16)
+                                .background(badgeColor(rec.status).opacity(0.15))
+                                .foregroundStyle(badgeColor(rec.status))
+                                .cornerRadius(4)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("\(rec.projectName) → \(rec.deviceNames.joined(separator: ", "))")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .lineLimit(1)
+                                Text("\(RelativeTime.short(from: rec.startTime)) ago · \(Int(rec.duration))s")
+                                    .font(.system(size: 9, design: .monospaced))
+                                    .foregroundStyle(Color(white: 0.44))
+                            }
+                            Spacer()
+                        }
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 7)
+                        .background(Color(white: 0.122))
+                        .cornerRadius(6)
+                    }
+
+                    Button("Clear History") { deployEngine.clearHistory() }
+                        .foregroundStyle(Color(red: 0.94, green: 0.27, blue: 0.27))
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 8)
+                }
+            }
+            .padding(12)
+        }
+    }
+
+    private func badgeText(_ s: DeployRecord.Status) -> String {
+        switch s { case .success: "OK"; case .failed: "ERR"; case .cancelled: "CXL" }
+    }
+
+    private func badgeColor(_ s: DeployRecord.Status) -> Color {
+        switch s {
+        case .success: Color(red: 0.13, green: 0.77, blue: 0.37)
+        case .failed: Color(red: 0.94, green: 0.27, blue: 0.27)
+        case .cancelled: Color(white: 0.5)
         }
     }
 }
