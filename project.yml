@@ -30,6 +30,10 @@ targets:
         CFBundleName: DeployBar
         CFBundleDisplayName: DeployBar
         NSHumanReadableCopyright: "© 2026 Salesforza"
+        SUFeedURL: "https://raw.githubusercontent.com/vincenzobelpiede/deploybar-releases/main/appcast.xml"
+        SUPublicEDKey: "t93XWX59VMcczcXOsyrANiaxvDkIaghjG2t4Q0Dxn6A="
+        SUEnableAutomaticChecks: true
+        SUScheduledCheckInterval: 86400
     entitlements:
       path: DeployBar/DeployBar.entitlements
     settings:
