@@ -11,7 +11,7 @@ struct PopoverRootView: View {
     @State private var tab: DeployTab = .deploy
     @StateObject private var deviceManager = DeviceManager()
     @StateObject private var projectScanner = ProjectScanner()
-    @StateObject private var deployEngine = DeployEngine()
+    @EnvironmentObject var deployEngine: DeployEngine
     @AppStorage("lastProjectPath") private var lastProjectPath: String = ""
     @AppStorage("lastDeviceId") private var lastDeviceId: String = ""
 

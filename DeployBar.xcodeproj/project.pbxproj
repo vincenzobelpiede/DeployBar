@@ -13,6 +13,7 @@
 		4481ECB7962CAD7204D47FA9 /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39972C1F34FB2A6B878EA246 /* LaunchAtLogin.swift */; };
 		572318E9F9FD5E7F502D89ED /* PopoverRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FAFF3261278E2222ADF955 /* PopoverRootView.swift */; };
 		6B7A2C9017CB6A89466595C1 /* DeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E07FB296B50EAF16689E0FB /* DeviceManager.swift */; };
+		BBE033981933AEB8E6052204 /* DeployStatusWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6203590A2B16EFB417E98B73 /* DeployStatusWindow.swift */; };
 		EBC5AEB2D588C7D66EDD6716 /* ProjectScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224DA1247A788BDCBDE0FD63 /* ProjectScanner.swift */; };
 		F490B46C416C421A1E4E265B /* DeployBarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED0A4A6C4E0346174AF8482 /* DeployBarApp.swift */; };
 /* End PBXBuildFile section */
@@ -23,6 +24,7 @@
 		39972C1F34FB2A6B878EA246 /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
 		50F128CEC831EFAF612AA4DF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		51FAFF3261278E2222ADF955 /* PopoverRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverRootView.swift; sourceTree = "<group>"; };
+		6203590A2B16EFB417E98B73 /* DeployStatusWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeployStatusWindow.swift; sourceTree = "<group>"; };
 		7E07FB296B50EAF16689E0FB /* DeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceManager.swift; sourceTree = "<group>"; };
 		8A5455E1C4EB61240DA56365 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A033401E92346A46CE6103B7 /* StatusIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusIcon.swift; sourceTree = "<group>"; };
@@ -53,6 +55,7 @@
 				50F128CEC831EFAF612AA4DF /* AppDelegate.swift */,
 				FED0A4A6C4E0346174AF8482 /* DeployBarApp.swift */,
 				30BC71CE991E1A25320E1CE9 /* DeployEngine.swift */,
+				6203590A2B16EFB417E98B73 /* DeployStatusWindow.swift */,
 				7E07FB296B50EAF16689E0FB /* DeviceManager.swift */,
 				8A5455E1C4EB61240DA56365 /* Info.plist */,
 				39972C1F34FB2A6B878EA246 /* LaunchAtLogin.swift */,
@@ -125,6 +128,7 @@
 				32D8E850E70A35D53B7863D6 /* AppDelegate.swift in Sources */,
 				F490B46C416C421A1E4E265B /* DeployBarApp.swift in Sources */,
 				2B7B08B5B24A33807DED4E82 /* DeployEngine.swift in Sources */,
+				BBE033981933AEB8E6052204 /* DeployStatusWindow.swift in Sources */,
 				6B7A2C9017CB6A89466595C1 /* DeviceManager.swift in Sources */,
 				4481ECB7962CAD7204D47FA9 /* LaunchAtLogin.swift in Sources */,
 				572318E9F9FD5E7F502D89ED /* PopoverRootView.swift in Sources */,

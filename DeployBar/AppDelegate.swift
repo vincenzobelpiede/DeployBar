@@ -5,10 +5,13 @@ enum StatusIconState {
     case idle, deploying, failed
 }
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private var iconState: StatusIconState = .idle
+    let deployEngine = DeployEngine()
+    private var clickWorkItem: DispatchWorkItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Enable Launch at Login by default on first run only.
@@ -21,13 +24,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover = NSPopover()
         popover.contentSize = NSSize(width: 360, height: 700)
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: PopoverRootView())
+        popover.contentViewController = NSHostingController(
+            rootView: PopoverRootView().environmentObject(deployEngine)
+        )
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
             button.imagePosition = .imageOnly
-            button.action = #selector(togglePopover(_:))
+            button.action = #selector(handleStatusClick(_:))
             button.target = self
+            button.sendAction(on: [.leftMouseUp])
         }
         applyStatusIcon()
 
@@ -64,6 +70,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let img = NSImage(systemSymbolName: name, accessibilityDescription: "DeployBar")
         img?.isTemplate = true
         button.image = img
+    }
+
+    @objc private func handleStatusClick(_ sender: AnyObject?) {
+        // Distinguish single click vs double click manually using NSEvent.
+        let clickCount = NSApp.currentEvent?.clickCount ?? 1
+        if clickCount >= 2 {
+            // Cancel the pending single-click action and open the detached window.
+            clickWorkItem?.cancel()
+            clickWorkItem = nil
+            DeployStatusWindowController.shared.show(engine: deployEngine)
+            return
+        }
+        // Defer the popover toggle briefly so a follow-up click can upgrade
+        // the gesture to a double click.
+        clickWorkItem?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            self?.togglePopover(sender)
+        }
+        clickWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + NSEvent.doubleClickInterval, execute: work)
     }
 
     @objc private func togglePopover(_ sender: AnyObject?) {
