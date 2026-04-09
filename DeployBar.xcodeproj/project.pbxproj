@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1E3CD879785EA8E6CD6FA636 /* StatusIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A033401E92346A46CE6103B7 /* StatusIcon.swift */; };
+		2707DAA89249750D85EB4BC1 /* ProjectAnalysisSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A7757AD424504066C29CE1 /* ProjectAnalysisSheet.swift */; };
 		2B7B08B5B24A33807DED4E82 /* DeployEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30BC71CE991E1A25320E1CE9 /* DeployEngine.swift */; };
 		32D8E850E70A35D53B7863D6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50F128CEC831EFAF612AA4DF /* AppDelegate.swift */; };
 		4481ECB7962CAD7204D47FA9 /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39972C1F34FB2A6B878EA246 /* LaunchAtLogin.swift */; };
@@ -15,6 +16,7 @@
 		572318E9F9FD5E7F502D89ED /* PopoverRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FAFF3261278E2222ADF955 /* PopoverRootView.swift */; };
 		615140BFBA431051DAB89861 /* QuarantineHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFAFC0F65AAA722AB87AC48 /* QuarantineHelper.swift */; };
 		6B7A2C9017CB6A89466595C1 /* DeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E07FB296B50EAF16689E0FB /* DeviceManager.swift */; };
+		A5A862842AD696A229A408DB /* ProjectAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15E9A4F0480C2D667BCFAA5 /* ProjectAnalyzer.swift */; };
 		BBE033981933AEB8E6052204 /* DeployStatusWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6203590A2B16EFB417E98B73 /* DeployStatusWindow.swift */; };
 		CC165BF8EEAE82A96A44CE7B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CB9D4EBA17ACC04E8F2C9252 /* Assets.xcassets */; };
 		EBC5AEB2D588C7D66EDD6716 /* ProjectScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224DA1247A788BDCBDE0FD63 /* ProjectScanner.swift */; };
@@ -25,6 +27,7 @@
 		224DA1247A788BDCBDE0FD63 /* ProjectScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectScanner.swift; sourceTree = "<group>"; };
 		30BC71CE991E1A25320E1CE9 /* DeployEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeployEngine.swift; sourceTree = "<group>"; };
 		39972C1F34FB2A6B878EA246 /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
+		47A7757AD424504066C29CE1 /* ProjectAnalysisSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectAnalysisSheet.swift; sourceTree = "<group>"; };
 		50F128CEC831EFAF612AA4DF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		51FAFF3261278E2222ADF955 /* PopoverRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverRootView.swift; sourceTree = "<group>"; };
 		5A25AB70480572FCB6F9429B /* PairAndroidView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairAndroidView.swift; sourceTree = "<group>"; };
@@ -35,6 +38,7 @@
 		A033401E92346A46CE6103B7 /* StatusIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusIcon.swift; sourceTree = "<group>"; };
 		CB9D4EBA17ACC04E8F2C9252 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DD43A2A6C53DEA9D5514D087 /* DeployBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeployBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F15E9A4F0480C2D667BCFAA5 /* ProjectAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectAnalyzer.swift; sourceTree = "<group>"; };
 		FB9004A0F3030A14A0193CF9 /* DeployBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DeployBar.entitlements; sourceTree = "<group>"; };
 		FED0A4A6C4E0346174AF8482 /* DeployBarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeployBarApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -70,6 +74,8 @@
 				39972C1F34FB2A6B878EA246 /* LaunchAtLogin.swift */,
 				5A25AB70480572FCB6F9429B /* PairAndroidView.swift */,
 				51FAFF3261278E2222ADF955 /* PopoverRootView.swift */,
+				47A7757AD424504066C29CE1 /* ProjectAnalysisSheet.swift */,
+				F15E9A4F0480C2D667BCFAA5 /* ProjectAnalyzer.swift */,
 				224DA1247A788BDCBDE0FD63 /* ProjectScanner.swift */,
 				8AFAFC0F65AAA722AB87AC48 /* QuarantineHelper.swift */,
 				A033401E92346A46CE6103B7 /* StatusIcon.swift */,
@@ -155,6 +161,8 @@
 				4481ECB7962CAD7204D47FA9 /* LaunchAtLogin.swift in Sources */,
 				4C578D696D123194F0C5D305 /* PairAndroidView.swift in Sources */,
 				572318E9F9FD5E7F502D89ED /* PopoverRootView.swift in Sources */,
+				2707DAA89249750D85EB4BC1 /* ProjectAnalysisSheet.swift in Sources */,
+				A5A862842AD696A229A408DB /* ProjectAnalyzer.swift in Sources */,
 				EBC5AEB2D588C7D66EDD6716 /* ProjectScanner.swift in Sources */,
 				615140BFBA431051DAB89861 /* QuarantineHelper.swift in Sources */,
 				1E3CD879785EA8E6CD6FA636 /* StatusIcon.swift in Sources */,

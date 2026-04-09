@@ -15,6 +15,7 @@ struct PopoverRootView: View {
     @AppStorage("lastProjectPath") private var lastProjectPath: String = ""
     @AppStorage("lastDeviceId") private var lastDeviceId: String = ""
     @State private var showingPair: Bool = false
+    @State private var analyzingProjectPath: String?
 
     private var flutterMissing: Bool {
         if case .flutterNotFound = deviceManager.error { return true }
@@ -51,7 +52,8 @@ struct PopoverRootView: View {
                     DeployTabView(
                         selectedProjectPath: $lastProjectPath,
                         selectedDeviceId: $lastDeviceId,
-                        showingPair: $showingPair
+                        showingPair: $showingPair,
+                        analyzingProjectPath: $analyzingProjectPath
                     )
                         .environmentObject(deviceManager)
                         .environmentObject(projectScanner)
@@ -60,6 +62,15 @@ struct PopoverRootView: View {
                             PairAndroidView {
                                 deviceManager.refresh()
                             }
+                        }
+                        .sheet(item: Binding(
+                            get: { analyzingProjectPath.map { AnalyzePathWrapper(path: $0) } },
+                            set: { analyzingProjectPath = $0?.path }
+                        )) { wrapper in
+                            ProjectAnalysisSheet(
+                                projectPath: wrapper.path,
+                                history: deployEngine.history
+                            )
                         }
                 case .history: HistoryTabView().environmentObject(deployEngine)
                 case .settings: SettingsTabView().environmentObject(projectScanner)
@@ -80,6 +91,7 @@ struct DeployTabView: View {
     @Binding var selectedProjectPath: String
     @Binding var selectedDeviceId: String
     @Binding var showingPair: Bool
+    @Binding var analyzingProjectPath: String?
 
     private var selectedProject: ScannedProject? {
         projectScanner.projects.first { $0.path == selectedProjectPath }
@@ -158,7 +170,8 @@ struct DeployTabView: View {
                 ForEach(projectScanner.projects) { p in
                     ProjectRowView(
                         project: p,
-                        selected: selectedProjectPath == p.path
+                        selected: selectedProjectPath == p.path,
+                        onAnalyze: { analyzingProjectPath = p.path }
                     ) {
                         selectedProjectPath = p.path
                     }
@@ -365,9 +378,15 @@ struct DeviceRowView: View {
     }
 }
 
+struct AnalyzePathWrapper: Identifiable {
+    let path: String
+    var id: String { path }
+}
+
 struct ProjectRowView: View {
     let project: ScannedProject
     let selected: Bool
+    var onAnalyze: (() -> Void)? = nil
     let onTap: () -> Void
 
     var body: some View {
@@ -410,6 +429,15 @@ struct ProjectRowView: View {
             }
             .buttonStyle(.plain)
             .help("Open in Terminal")
+            Button {
+                onAnalyze?()
+            } label: {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color(white: 0.55))
+            }
+            .buttonStyle(.plain)
+            .help("Analyze project")
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 6)
