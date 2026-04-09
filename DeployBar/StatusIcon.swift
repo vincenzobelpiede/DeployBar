@@ -23,6 +23,6 @@ enum StatusIcon {
     ]
 
     static var current: String {
-        UserDefaults.standard.string(forKey: defaultsKey) ?? "paperplane.fill"
+        UserDefaults.standard.string(forKey: defaultsKey) ?? "hammer.fill"
     }
 }

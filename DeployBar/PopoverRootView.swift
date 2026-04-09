@@ -148,7 +148,7 @@ struct HistoryTabView: View {
 }
 
 struct SettingsTabView: View {
-    @AppStorage(StatusIcon.defaultsKey) private var iconName: String = "paperplane.fill"
+    @AppStorage(StatusIcon.defaultsKey) private var iconName: String = "hammer.fill"
 
     var body: some View {
         ScrollView {
