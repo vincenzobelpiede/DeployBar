@@ -4,6 +4,10 @@ options:
   deploymentTarget:
     macOS: "14.0"
   createIntermediateGroups: true
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.9.1
 settings:
   base:
     MARKETING_VERSION: "1.0"
@@ -17,6 +21,8 @@ targets:
     platform: macOS
     sources:
       - path: DeployBar
+    dependencies:
+      - package: Sparkle
     info:
       path: DeployBar/Info.plist
       properties:

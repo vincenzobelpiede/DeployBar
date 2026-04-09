@@ -14,6 +14,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var clickWorkItem: DispatchWorkItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Eager-init Sparkle so its scheduled background checks start running.
+        _ = UpdaterController.shared.controller
+
         // Enable Launch at Login by default on first run only.
         let firstRunKey = "launchAtLoginFirstRunDone"
         if !UserDefaults.standard.bool(forKey: firstRunKey) {

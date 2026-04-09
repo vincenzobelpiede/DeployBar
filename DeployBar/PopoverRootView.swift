@@ -810,6 +810,12 @@ struct SettingsTabView: View {
                     .foregroundStyle(Color(white: 0.44))
                     .frame(maxWidth: .infinity, alignment: .center)
 
+                Button("Check for Updates…") {
+                    UpdaterController.shared.checkForUpdates()
+                }
+                .frame(maxWidth: .infinity)
+                .foregroundStyle(Color(red: 0.13, green: 0.77, blue: 0.37))
+
                 Button("Quit DeployBar") { NSApp.terminate(nil) }
                     .foregroundStyle(.red)
                     .frame(maxWidth: .infinity)

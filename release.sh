@@ -132,8 +132,37 @@ xcrun notarytool submit "${DMG_PATH}" --keychain-profile DeployBar --wait
 xcrun stapler staple "${DMG_PATH}"
 xcrun stapler validate "${DMG_PATH}"
 
+# ── 10. Sign update for Sparkle appcast ─────────────────────
+echo "▶ Signing update for Sparkle appcast…"
+SIGN_OUTPUT="$(./tools/sparkle/bin/sign_update "${DMG_PATH}")"
+DMG_SIZE=$(stat -f%z "${DMG_PATH}")
+APPCAST_ITEM="${BUILD_DIR}/appcast-item-${VERSION}.xml"
+RELEASE_DATE="$(LC_TIME=en_US.UTF-8 date -u "+%a, %d %b %Y %H:%M:%S +0000")"
+cat > "${APPCAST_ITEM}" <<APPCASTEOF
+        <item>
+            <title>Version ${VERSION}</title>
+            <pubDate>${RELEASE_DATE}</pubDate>
+            <sparkle:version>${BUILD_NUM}</sparkle:version>
+            <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <h3>What's new in ${VERSION}</h3>
+                <ul><li>See changelog at https://vincenzobelpiede.com/deploybar</li></ul>
+            ]]></description>
+            <enclosure
+                url="https://vincenzobelpiede.com/deploybar/DeployBar-${VERSION}.dmg"
+                length="${DMG_SIZE}"
+                type="application/octet-stream"
+                ${SIGN_OUTPUT} />
+        </item>
+APPCASTEOF
+
 echo
 echo "✅ Done."
-echo "   App:    ${APP_PATH}"
-echo "   DMG:    ${DMG_PATH}"
-echo "   Version: ${VERSION} (build ${BUILD_NUM})"
+echo "   App:        ${APP_PATH}"
+echo "   DMG:        ${DMG_PATH}"
+echo "   Version:    ${VERSION} (build ${BUILD_NUM})"
+echo "   Appcast:    ${APPCAST_ITEM}"
+echo
+echo "Next: paste the contents of ${APPCAST_ITEM} into your hosted appcast.xml"
+echo "      and upload ${DMG_PATH} to https://vincenzobelpiede.com/deploybar/"
