@@ -675,6 +675,28 @@ struct SettingsTabView: View {
 
                 Spacer(minLength: 24)
 
+                DisclosureGroup {
+                    ScrollView {
+                        Text(Self.changelog)
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundStyle(Color(white: 0.75))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(8)
+                    }
+                    .frame(maxHeight: 160)
+                    .background(Color(white: 0.067))
+                    .cornerRadius(6)
+                } label: {
+                    Text("What's New")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+
+                Text(Self.versionString)
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundStyle(Color(white: 0.44))
+                    .frame(maxWidth: .infinity, alignment: .center)
+
                 Button("Quit DeployBar") { NSApp.terminate(nil) }
                     .foregroundStyle(.red)
                     .frame(maxWidth: .infinity)
@@ -688,6 +710,23 @@ struct SettingsTabView: View {
         if path.hasPrefix(home) { return "~" + path.dropFirst(home.count) }
         return path
     }
+
+    private static var versionString: String {
+        let info = Bundle.main.infoDictionary
+        let v = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let b = info?["CFBundleVersion"] as? String ?? "?"
+        return "DeployBar v\(v) (build \(b))"
+    }
+
+    private static let changelog: String = """
+v1.0.0
+- One-click Flutter deploy to iOS and Android
+- Smart project scanner with Spotlight
+- Device caching for instant launch
+- Wireless Android pairing wizard
+- Deploy history with live log
+- Launch at Login
+"""
 
     private func addFolder() {
         let panel = NSOpenPanel()
