@@ -811,6 +811,19 @@ struct SettingsTabView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
 
                 Button {
+                    if let url = URL(string: "https://github.com/vincenzobelpiede/deploybar-releases/discussions") {
+                        NSWorkspace.shared.open(url)
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "bubble.left.and.text.bubble.right")
+                        Text("Request a Feature")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .foregroundStyle(Color(red: 0.13, green: 0.77, blue: 0.37))
+
+                Button {
                     let path = FileLogger.shared.logFileURL.path
                     let pb = NSPasteboard.general
                     pb.clearContents()
