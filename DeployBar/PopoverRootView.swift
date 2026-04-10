@@ -810,6 +810,20 @@ struct SettingsTabView: View {
                     .foregroundStyle(Color(white: 0.44))
                     .frame(maxWidth: .infinity, alignment: .center)
 
+                Button {
+                    let path = FileLogger.shared.logFileURL.path
+                    let pb = NSPasteboard.general
+                    pb.clearContents()
+                    pb.setString(path, forType: .string)
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "doc.text.magnifyingglass")
+                        Text("Copy Diagnostic Log Path")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .foregroundStyle(Color(white: 0.7))
+
                 Button("Check for Updates…") {
                     UpdaterController.shared.checkForUpdates()
                 }
@@ -838,6 +852,13 @@ struct SettingsTabView: View {
     }
 
     private static let changelog: String = """
+v1.1.0
+- Crash logging to ~/Library/Logs/DeployBar/
+- Copy Diagnostic Log button in Settings
+- Welcome sheet on first launch
+- Request a Feature link to GitHub Discussions
+- Light / Dark / System appearance toggle
+
 v1.0.0
 - One-click Flutter deploy to iOS and Android
 - Smart project scanner with Spotlight

@@ -14,6 +14,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var clickWorkItem: DispatchWorkItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Start file logging before anything else.
+        FileLogger.shared.redirectOutput()
+
         // Eager-init Sparkle so its scheduled background checks start running.
         _ = UpdaterController.shared.controller
 
