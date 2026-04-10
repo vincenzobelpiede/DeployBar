@@ -25,7 +25,7 @@ struct ProjectAnalysisSheet: View {
             .padding(.top, 14)
             .padding(.bottom, 10)
 
-            Divider().background(Color(white: 0.17))
+            Divider().background(Theme.divider)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
@@ -89,12 +89,12 @@ struct ProjectAnalysisSheet: View {
                             ScrollView {
                                 Text(log)
                                     .font(.system(size: 9, design: .monospaced))
-                                    .foregroundStyle(Color(red: 0.94, green: 0.27, blue: 0.27))
+                                    .foregroundStyle(Theme.error)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .textSelection(.enabled)
                             }
                             .frame(maxHeight: 160)
-                            .background(Color(white: 0.067))
+                            .background(Theme.codeBackground)
                             .cornerRadius(4)
                         }
                     }
@@ -102,7 +102,7 @@ struct ProjectAnalysisSheet: View {
                 .padding(16)
             }
 
-            Divider().background(Color(white: 0.17))
+            Divider().background(Theme.divider)
             HStack {
                 if loading {
                     ProgressView().controlSize(.small)
@@ -114,8 +114,8 @@ struct ProjectAnalysisSheet: View {
             .padding(12)
         }
         .frame(width: 460, height: 600)
-        .background(Color(red: 0.094, green: 0.094, blue: 0.106))
-        .foregroundStyle(.white)
+        .background(Theme.background)
+        .foregroundStyle(Theme.textPrimary)
         .task {
             self.report = await ProjectAnalyzer.analyze(projectPath: projectPath, history: history)
             self.loading = false
@@ -127,7 +127,7 @@ struct ProjectAnalysisSheet: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title.uppercased())
                 .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                .foregroundStyle(Color(white: 0.44))
+                .foregroundStyle(Theme.textSecondary)
                 .tracking(1.2)
             content()
         }
@@ -137,7 +137,7 @@ struct ProjectAnalysisSheet: View {
     private func mono(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 11, design: .monospaced))
-            .foregroundStyle(Color(white: 0.85))
+            .foregroundStyle(Theme.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .textSelection(.enabled)
     }

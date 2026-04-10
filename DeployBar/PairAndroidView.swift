@@ -25,7 +25,7 @@ struct PairAndroidView: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Divider().background(Color(white: 0.17))
+            Divider().background(Theme.divider)
 
             switch step {
             case .pair:
@@ -42,7 +42,7 @@ struct PairAndroidView: View {
 
             case .connect:
                 Text("✓ Paired").font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(Color(red: 0.13, green: 0.77, blue: 0.37))
+                    .foregroundStyle(Theme.accent)
                 Text("Now go back to the Wireless debugging screen and copy the IP:port shown at the top (different from the pairing port).")
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
@@ -58,13 +58,13 @@ struct PairAndroidView: View {
             case .done:
                 Text("✓ Connected — refreshing devices…")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color(red: 0.13, green: 0.77, blue: 0.37))
+                    .foregroundStyle(Theme.accent)
             }
 
             if !status.isEmpty {
                 Text(status)
                     .font(.system(size: 10, design: .monospaced))
-                    .foregroundStyle(isError ? Color(red: 0.94, green: 0.27, blue: 0.27) : Color(white: 0.55))
+                    .foregroundStyle(isError ? Theme.error : Theme.textTertiary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .lineLimit(4)
             }
@@ -76,15 +76,15 @@ struct PairAndroidView: View {
         }
         .padding(18)
         .frame(width: 360)
-        .background(Color(red: 0.094, green: 0.094, blue: 0.106))
-        .foregroundStyle(.white)
+        .background(Theme.background)
+        .foregroundStyle(Theme.textPrimary)
     }
 
     @ViewBuilder
     private func fieldLabel(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 9, weight: .semibold, design: .monospaced))
-            .foregroundStyle(Color(white: 0.44))
+            .foregroundStyle(Theme.textSecondary)
             .tracking(1.2)
     }
 
@@ -95,8 +95,8 @@ struct PairAndroidView: View {
                 .font(.system(size: 12, weight: .bold, design: .monospaced))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 9)
-                .background(Color(red: 0.13, green: 0.77, blue: 0.37))
-                .foregroundStyle(Color.black)
+                .background(Theme.accent)
+                .foregroundStyle(Theme.accentLabel)
                 .cornerRadius(6)
         }
         .buttonStyle(.plain)

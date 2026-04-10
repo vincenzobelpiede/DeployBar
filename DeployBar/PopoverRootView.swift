@@ -14,6 +14,7 @@ struct PopoverRootView: View {
     @EnvironmentObject var deployEngine: DeployEngine
     @AppStorage("lastProjectPath") private var lastProjectPath: String = ""
     @AppStorage("lastDeviceId") private var lastDeviceId: String = ""
+    @AppStorage("appearanceMode") private var appearanceMode: String = AppearanceMode.system.rawValue
     @State private var showingPair: Bool = false
     @State private var analyzingProjectPath: String?
 
@@ -33,8 +34,8 @@ struct PopoverRootView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(Color(red: 0.96, green: 0.62, blue: 0.04).opacity(0.15))
-                .foregroundStyle(Color(red: 0.96, green: 0.62, blue: 0.04))
+                .background(Theme.warning.opacity(0.15))
+                .foregroundStyle(Theme.warning)
             }
             Picker("", selection: $tab) {
                 ForEach(DeployTab.allCases) { t in
@@ -79,8 +80,17 @@ struct PopoverRootView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(width: 360, height: 700)
-        .background(Color(red: 0.094, green: 0.094, blue: 0.106))
-        .foregroundStyle(.white)
+        .background(Theme.background)
+        .foregroundStyle(Theme.textPrimary)
+        .preferredColorScheme(resolvedColorScheme)
+    }
+
+    private var resolvedColorScheme: ColorScheme? {
+        switch AppearanceMode(rawValue: appearanceMode) {
+        case .light: return .light
+        case .dark:  return .dark
+        default:     return nil  // system
+        }
     }
 }
 
@@ -137,7 +147,7 @@ struct DeployTabView: View {
                 .padding(12)
             }
 
-            Divider().background(Color(white: 0.17))
+            Divider().background(Theme.divider)
             deployButtonBar
                 .padding(12)
         }
@@ -151,14 +161,14 @@ struct DeployTabView: View {
             if let ts = projectScanner.lastScanned {
                 Text("scanned \(RelativeTime.short(from: ts)) ago")
                     .font(.system(size: 8, design: .monospaced))
-                    .foregroundStyle(Color(white: 0.44))
+                    .foregroundStyle(Theme.textSecondary)
             }
             Button {
                 projectScanner.refresh()
             } label: {
                 Image(systemName: projectScanner.isScanning ? "arrow.2.circlepath" : "arrow.clockwise")
                     .font(.system(size: 10))
-                    .foregroundStyle(Color(white: 0.55))
+                    .foregroundStyle(Theme.textTertiary)
             }
             .buttonStyle(.plain)
             .disabled(projectScanner.isScanning)
@@ -179,7 +189,7 @@ struct DeployTabView: View {
             }
         }
 
-        Divider().background(Color(white: 0.17))
+        Divider().background(Theme.divider)
 
         HStack(spacing: 6) {
             sectionLabel("Devices · flutter + adb")
@@ -188,8 +198,8 @@ struct DeployTabView: View {
                     .font(.system(size: 8, weight: .semibold, design: .monospaced))
                     .padding(.horizontal, 5)
                     .padding(.vertical, 1)
-                    .background(Color(white: 0.2))
-                    .foregroundStyle(Color(white: 0.55))
+                    .background(Theme.surface)
+                    .foregroundStyle(Theme.textTertiary)
                     .cornerRadius(3)
             }
             Spacer()
@@ -221,11 +231,11 @@ struct DeployTabView: View {
             }
             .padding(.horizontal, 9)
             .padding(.vertical, 6)
-            .background(Color(white: 0.122))
+            .background(Theme.surface)
             .cornerRadius(6)
         }
         .buttonStyle(.plain)
-        .foregroundStyle(Color(red: 0.13, green: 0.77, blue: 0.37))
+        .foregroundStyle(Theme.accent)
     }
 
     @ViewBuilder
@@ -237,7 +247,7 @@ struct DeployTabView: View {
         }
         ProgressView()
             .progressViewStyle(.linear)
-            .tint(Color(red: 0.13, green: 0.77, blue: 0.37))
+            .tint(Theme.accent)
         LogView(lines: deployEngine.logLines)
     }
 
@@ -251,8 +261,8 @@ struct DeployTabView: View {
                     .font(.system(size: 12, weight: .bold, design: .monospaced))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(Color(red: 0.94, green: 0.27, blue: 0.27).opacity(0.15))
-                    .foregroundStyle(Color(red: 0.94, green: 0.27, blue: 0.27))
+                    .background(Theme.error.opacity(0.15))
+                    .foregroundStyle(Theme.error)
                     .cornerRadius(6)
             }
             .buttonStyle(.plain)
@@ -270,9 +280,9 @@ struct DeployTabView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background(canDeploy
-                        ? Color(red: 0.13, green: 0.77, blue: 0.37)
-                        : Color(white: 0.2))
-                    .foregroundStyle(canDeploy ? Color.black : Color(white: 0.5))
+                        ? Theme.accent
+                        : Theme.surface)
+                    .foregroundStyle(canDeploy ? Theme.accentLabel : Theme.textDisabled)
                     .cornerRadius(6)
             }
             .buttonStyle(.plain)
@@ -283,7 +293,7 @@ struct DeployTabView: View {
     private func sectionLabel(_ text: String) -> some View {
         Text(text.uppercased())
             .font(.system(size: 9, weight: .semibold, design: .monospaced))
-            .foregroundStyle(Color(white: 0.44))
+            .foregroundStyle(Theme.textSecondary)
             .tracking(1.5)
     }
 
@@ -301,13 +311,13 @@ struct DeployTabView: View {
         case .flutterNotFound:
             Text("Flutter not found — install from flutter.dev")
                 .font(.system(size: 12))
-                .foregroundStyle(Color(red: 0.94, green: 0.27, blue: 0.27))
+                .foregroundStyle(Theme.error)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, 24)
         case .scanFailed(let msg):
             Text("Scan failed: \(msg)")
                 .font(.system(size: 11))
-                .foregroundStyle(Color(red: 0.94, green: 0.27, blue: 0.27))
+                .foregroundStyle(Theme.error)
                 .padding(.vertical, 16)
         }
     }
@@ -330,7 +340,7 @@ struct DeviceRowView: View {
                     .lineLimit(1)
                 Text("\(truncatedId(device.id)) · \(device.platform.rawValue)")
                     .font(.system(size: 9, design: .monospaced))
-                    .foregroundStyle(Color(white: 0.44))
+                    .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
             }
             Spacer()
@@ -339,8 +349,8 @@ struct DeviceRowView: View {
                     .font(.system(size: 8, weight: .semibold, design: .monospaced))
                     .padding(.horizontal, 5)
                     .padding(.vertical, 2)
-                    .background(Color(red: 0.96, green: 0.62, blue: 0.04).opacity(0.18))
-                    .foregroundStyle(Color(red: 0.96, green: 0.62, blue: 0.04))
+                    .background(Theme.warning.opacity(0.18))
+                    .foregroundStyle(Theme.warning)
                     .cornerRadius(4)
             }
             Text(device.connectionType == .usb ? "USB" : "Wi-Fi")
@@ -348,26 +358,26 @@ struct DeviceRowView: View {
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
                 .background(device.connectionType == .usb
-                    ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.15)
-                    : Color(red: 0.23, green: 0.51, blue: 0.96).opacity(0.15))
+                    ? Theme.accent.opacity(0.15)
+                    : Theme.accentBlue.opacity(0.15))
                 .foregroundStyle(device.connectionType == .usb
-                    ? Color(red: 0.13, green: 0.77, blue: 0.37)
-                    : Color(red: 0.23, green: 0.51, blue: 0.96))
+                    ? Theme.accent
+                    : Theme.accentBlue)
                 .cornerRadius(4)
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 6)
         .background(selected
-            ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.05)
-            : Color(white: 0.122))
+            ? Theme.accent.opacity(0.05)
+            : Theme.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 6)
-                .stroke(selected ? Color(red: 0.13, green: 0.77, blue: 0.37) : Color.clear, lineWidth: 1)
+                .stroke(selected ? Theme.accent : Color.clear, lineWidth: 1)
         )
         .cornerRadius(6)
         }
         .buttonStyle(.plain)
-        .foregroundStyle(.white)
+        .foregroundStyle(Theme.textPrimary)
     }
 
     private func truncatedId(_ id: String) -> String {
@@ -395,8 +405,8 @@ struct ProjectRowView: View {
                 .font(.system(size: 8, weight: .bold, design: .monospaced))
                 .frame(width: 30)
                 .padding(.vertical, 3)
-                .background(Color(red: 0.23, green: 0.51, blue: 0.96).opacity(0.15))
-                .foregroundStyle(Color(red: 0.23, green: 0.51, blue: 0.96))
+                .background(Theme.accentBlue.opacity(0.15))
+                .foregroundStyle(Theme.accentBlue)
                 .cornerRadius(4)
             VStack(alignment: .leading, spacing: 2) {
                 Text(project.name)
@@ -404,19 +414,19 @@ struct ProjectRowView: View {
                     .lineLimit(1)
                 Text(shortenPath(project.path))
                     .font(.system(size: 9, design: .monospaced))
-                    .foregroundStyle(Color(white: 0.44))
+                    .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
             }
             Spacer()
             Text(RelativeTime.short(from: project.lastModified))
                 .font(.system(size: 9, design: .monospaced))
-                .foregroundStyle(Color(white: 0.44))
+                .foregroundStyle(Theme.textSecondary)
             Button {
                 NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: project.path)])
             } label: {
                 Image(systemName: "folder")
                     .font(.system(size: 11))
-                    .foregroundStyle(Color(white: 0.55))
+                    .foregroundStyle(Theme.textTertiary)
             }
             .buttonStyle(.plain)
             .help("Show in Finder")
@@ -425,7 +435,7 @@ struct ProjectRowView: View {
             } label: {
                 Image(systemName: "terminal")
                     .font(.system(size: 11))
-                    .foregroundStyle(Color(white: 0.55))
+                    .foregroundStyle(Theme.textTertiary)
             }
             .buttonStyle(.plain)
             .help("Open in Terminal")
@@ -434,7 +444,7 @@ struct ProjectRowView: View {
             } label: {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 11))
-                    .foregroundStyle(Color(white: 0.55))
+                    .foregroundStyle(Theme.textTertiary)
             }
             .buttonStyle(.plain)
             .help("Analyze project")
@@ -442,16 +452,16 @@ struct ProjectRowView: View {
         .padding(.horizontal, 9)
         .padding(.vertical, 6)
         .background(selected
-            ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.05)
-            : Color(white: 0.122))
+            ? Theme.accent.opacity(0.05)
+            : Theme.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 6)
-                .stroke(selected ? Color(red: 0.13, green: 0.77, blue: 0.37) : Color.clear, lineWidth: 1)
+                .stroke(selected ? Theme.accent : Color.clear, lineWidth: 1)
         )
         .cornerRadius(6)
         .contentShape(Rectangle())
         .onTapGesture { onTap() }
-        .foregroundStyle(.white)
+        .foregroundStyle(Theme.textPrimary)
     }
 
     private func shortenPath(_ path: String) -> String {
@@ -489,8 +499,8 @@ struct CopyLogButton: View {
             .font(.system(size: 9, weight: .semibold, design: .monospaced))
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(Color(white: 0.122))
-            .foregroundStyle(copied ? Color(red: 0.13, green: 0.77, blue: 0.37) : Color(white: 0.7))
+            .background(Theme.surface)
+            .foregroundStyle(copied ? Theme.accent : Theme.textTertiary)
             .cornerRadius(4)
         }
         .buttonStyle(.plain)
@@ -507,7 +517,7 @@ struct LogView: View {
                     ForEach(lines) { line in
                         HStack(alignment: .top, spacing: 6) {
                             Text(line.timestamp)
-                                .foregroundStyle(Color(white: 0.44))
+                                .foregroundStyle(Theme.textSecondary)
                             Text(line.text)
                                 .foregroundStyle(colorFor(line.level))
                         }
@@ -519,7 +529,7 @@ struct LogView: View {
                 .padding(8)
             }
             .frame(maxHeight: 220)
-            .background(Color(white: 0.067))
+            .background(Theme.codeBackground)
             .cornerRadius(6)
             .onChange(of: lines.count) { _, _ in
                 if let last = lines.last {
@@ -531,10 +541,10 @@ struct LogView: View {
 
     private func colorFor(_ level: LogLevel) -> Color {
         switch level {
-        case .info: return Color(white: 0.75)
-        case .success: return Color(red: 0.13, green: 0.77, blue: 0.37)
-        case .warning: return Color(red: 0.96, green: 0.62, blue: 0.04)
-        case .error: return Color(red: 0.94, green: 0.27, blue: 0.27)
+        case .info: return Theme.textTertiary
+        case .success: return Theme.accent
+        case .warning: return Theme.warning
+        case .error: return Theme.error
         }
     }
 }
@@ -571,10 +581,10 @@ struct HistoryTabView: View {
                             .cornerRadius(6)
                         }
                     }
-                    Divider().background(Color(white: 0.17))
+                    Divider().background(Theme.divider)
                     Text("ALL DEPLOYS")
                         .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(Color(white: 0.44))
+                        .foregroundStyle(Theme.textSecondary)
                         .tracking(1.5)
                 }
                 if deployEngine.history.isEmpty {
@@ -599,13 +609,13 @@ struct HistoryTabView: View {
                                         .lineLimit(1)
                                     Text("\(RelativeTime.short(from: rec.startTime)) ago · \(Int(rec.duration))s")
                                         .font(.system(size: 9, design: .monospaced))
-                                        .foregroundStyle(Color(white: 0.44))
+                                        .foregroundStyle(Theme.textSecondary)
                                 }
                                 Spacer()
                                 if rec.logText != nil {
                                     Image(systemName: expandedId == rec.id ? "chevron.up" : "chevron.down")
                                         .font(.system(size: 9))
-                                        .foregroundStyle(Color(white: 0.44))
+                                        .foregroundStyle(Theme.textSecondary)
                                 }
                             }
                             .contentShape(Rectangle())
@@ -624,12 +634,12 @@ struct HistoryTabView: View {
                                     ScrollView {
                                         Text(log)
                                             .font(.system(size: 9, design: .monospaced))
-                                            .foregroundStyle(Color(white: 0.7))
+                                            .foregroundStyle(Theme.textTertiary)
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                             .textSelection(.enabled)
                                     }
                                     .frame(maxHeight: 200)
-                                    .background(Color(white: 0.067))
+                                    .background(Theme.codeBackground)
                                     .cornerRadius(4)
                                 }
                                 .padding(.top, 6)
@@ -637,12 +647,12 @@ struct HistoryTabView: View {
                         }
                         .padding(.horizontal, 9)
                         .padding(.vertical, 6)
-                        .background(Color(white: 0.122))
+                        .background(Theme.surface)
                         .cornerRadius(6)
                     }
 
                     Button("Clear History") { deployEngine.clearHistory() }
-                        .foregroundStyle(Color(red: 0.94, green: 0.27, blue: 0.27))
+                        .foregroundStyle(Theme.error)
                         .frame(maxWidth: .infinity)
                         .padding(.top, 8)
                 }
@@ -657,9 +667,9 @@ struct HistoryTabView: View {
 
     private func badgeColor(_ s: DeployRecord.Status) -> Color {
         switch s {
-        case .success: Color(red: 0.13, green: 0.77, blue: 0.37)
-        case .failed: Color(red: 0.94, green: 0.27, blue: 0.27)
-        case .cancelled: Color(white: 0.5)
+        case .success: Theme.accent
+        case .failed: Theme.error
+        case .cancelled: Theme.textDisabled
         }
     }
 
@@ -673,6 +683,7 @@ struct SettingsTabView: View {
     @AppStorage(StatusIcon.defaultsKey) private var iconName: String = StatusIcon.customAssetId
     @AppStorage("notifyOnComplete") private var notifyOnComplete: Bool = true
     @AppStorage("defaultBuildMode") private var defaultBuildMode: String = "release"
+    @AppStorage("appearanceMode") private var appearanceMode: String = AppearanceMode.system.rawValue
     @State private var launchAtLogin: Bool = LaunchAtLogin.isEnabled
     @EnvironmentObject var projectScanner: ProjectScanner
 
@@ -681,14 +692,14 @@ struct SettingsTabView: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text("SCAN FOLDERS")
                     .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(Color(white: 0.44))
+                    .foregroundStyle(Theme.textSecondary)
                     .tracking(1.5)
                 VStack(spacing: 5) {
                     ForEach(projectScanner.scanDirectories, id: \.self) { dir in
                         HStack(spacing: 8) {
                             Text(shortenPath(dir))
                                 .font(.system(size: 11, design: .monospaced))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Theme.textPrimary)
                                 .lineLimit(1)
                                 .truncationMode(.middle)
                             Spacer()
@@ -696,13 +707,13 @@ struct SettingsTabView: View {
                                 projectScanner.removeDirectory(dir)
                             } label: {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(Color(white: 0.44))
+                                    .foregroundStyle(Theme.textSecondary)
                             }
                             .buttonStyle(.plain)
                         }
                         .padding(.horizontal, 9)
                         .padding(.vertical, 6)
-                        .background(Color(white: 0.122))
+                        .background(Theme.surface)
                         .cornerRadius(6)
                     }
                     Button {
@@ -715,16 +726,16 @@ struct SettingsTabView: View {
                         }
                         .padding(.horizontal, 9)
                         .padding(.vertical, 6)
-                        .background(Color(white: 0.122))
+                        .background(Theme.surface)
                         .cornerRadius(6)
                     }
                     .buttonStyle(.plain)
-                    .foregroundStyle(Color(red: 0.13, green: 0.77, blue: 0.37))
+                    .foregroundStyle(Theme.accent)
                 }
 
                 Text("BUILD & NOTIFICATIONS")
                     .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(Color(white: 0.44))
+                    .foregroundStyle(Theme.textSecondary)
                     .tracking(1.5)
                 VStack(spacing: 5) {
                     Toggle("Notify on complete", isOn: $notifyOnComplete)
@@ -740,12 +751,12 @@ struct SettingsTabView: View {
                 }
                 .toggleStyle(.switch)
                 .padding(9)
-                .background(Color(white: 0.122))
+                .background(Theme.surface)
                 .cornerRadius(6)
 
                 Text("MENU BAR ICON")
                     .font(.system(size: 9, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(Color(white: 0.44))
+                    .foregroundStyle(Theme.textSecondary)
                     .tracking(1.5)
 
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 5), spacing: 8) {
@@ -768,17 +779,17 @@ struct SettingsTabView: View {
                             }
                             .frame(width: 44, height: 44)
                             .background(iconName == opt.id
-                                    ? Color(red: 0.13, green: 0.77, blue: 0.37).opacity(0.18)
-                                    : Color(white: 0.122))
+                                    ? Theme.accent.opacity(0.18)
+                                    : Theme.surface)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 6)
                                         .stroke(iconName == opt.id
-                                            ? Color(red: 0.13, green: 0.77, blue: 0.37)
+                                            ? Theme.accent
                                             : Color.clear, lineWidth: 1.5)
                                 )
                                 .foregroundStyle(iconName == opt.id
-                                    ? Color(red: 0.13, green: 0.77, blue: 0.37)
-                                    : Color.white.opacity(0.85))
+                                    ? Theme.accent
+                                    : Theme.textPrimary.opacity(0.85))
                                 .cornerRadius(6)
                         }
                         .buttonStyle(.plain)
@@ -786,28 +797,39 @@ struct SettingsTabView: View {
                     }
                 }
 
+                Text("APPEARANCE")
+                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(Theme.textSecondary)
+                    .tracking(1.5)
+                Picker("", selection: $appearanceMode) {
+                    ForEach(AppearanceMode.allCases) { mode in
+                        Text(mode.rawValue).tag(mode.rawValue)
+                    }
+                }
+                .pickerStyle(.segmented)
+
                 Spacer(minLength: 24)
 
                 DisclosureGroup {
                     ScrollView {
                         Text(Self.changelog)
                             .font(.system(size: 10, design: .monospaced))
-                            .foregroundStyle(Color(white: 0.75))
+                            .foregroundStyle(Theme.textTertiary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(8)
                     }
                     .frame(maxHeight: 160)
-                    .background(Color(white: 0.067))
+                    .background(Theme.codeBackground)
                     .cornerRadius(6)
                 } label: {
                     Text("What's New")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Theme.textPrimary)
                 }
 
                 Text(Self.versionString)
                     .font(.system(size: 10, design: .monospaced))
-                    .foregroundStyle(Color(white: 0.44))
+                    .foregroundStyle(Theme.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)
 
                 Button {
@@ -821,7 +843,7 @@ struct SettingsTabView: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
-                .foregroundStyle(Color(red: 0.13, green: 0.77, blue: 0.37))
+                .foregroundStyle(Theme.accent)
 
                 Button {
                     let path = FileLogger.shared.logFileURL.path
@@ -835,13 +857,13 @@ struct SettingsTabView: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
-                .foregroundStyle(Color(white: 0.7))
+                .foregroundStyle(Theme.textTertiary)
 
                 Button("Check for Updates…") {
                     UpdaterController.shared.checkForUpdates()
                 }
                 .frame(maxWidth: .infinity)
-                .foregroundStyle(Color(red: 0.13, green: 0.77, blue: 0.37))
+                .foregroundStyle(Theme.accent)
 
                 Button("Quit DeployBar") { NSApp.terminate(nil) }
                     .foregroundStyle(.red)

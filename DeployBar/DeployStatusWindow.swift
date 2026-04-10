@@ -19,7 +19,7 @@ final class DeployStatusWindowController: NSWindowController {
         window.center()
         window.level = .floating
         window.titlebarAppearsTransparent = true
-        window.backgroundColor = NSColor(red: 0.094, green: 0.094, blue: 0.106, alpha: 1)
+        window.backgroundColor = .windowBackgroundColor
         super.init(window: window)
     }
 
@@ -44,8 +44,8 @@ struct DeployStatusView: View {
             HStack {
                 Image(systemName: deployEngine.isDeploying ? "arrow.2.circlepath" : "checkmark.circle.fill")
                     .foregroundStyle(deployEngine.isDeploying
-                        ? Color(red: 0.23, green: 0.51, blue: 0.96)
-                        : Color(red: 0.13, green: 0.77, blue: 0.37))
+                        ? Theme.accentBlue
+                        : Theme.accent)
                 if deployEngine.isDeploying {
                     Text("Step \(deployEngine.currentStep)/\(deployEngine.totalSteps) · \(deployEngine.currentDeviceName)")
                         .font(.system(size: 13, weight: .semibold))
@@ -60,14 +60,14 @@ struct DeployStatusView: View {
                 Spacer()
                 if deployEngine.isDeploying {
                     Button("Cancel") { deployEngine.cancel() }
-                        .foregroundStyle(Color(red: 0.94, green: 0.27, blue: 0.27))
+                        .foregroundStyle(Theme.error)
                 }
             }
 
             if deployEngine.isDeploying {
                 ProgressView()
                     .progressViewStyle(.linear)
-                    .tint(Color(red: 0.13, green: 0.77, blue: 0.37))
+                    .tint(Theme.accent)
             }
 
             LogView(lines: deployEngine.logLines)
@@ -75,7 +75,7 @@ struct DeployStatusView: View {
         }
         .padding(14)
         .frame(minWidth: 400, minHeight: 480)
-        .background(Color(red: 0.094, green: 0.094, blue: 0.106))
-        .foregroundStyle(.white)
+        .background(Theme.background)
+        .foregroundStyle(Theme.textPrimary)
     }
 }
