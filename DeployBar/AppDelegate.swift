@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var iconState: StatusIconState = .idle
     let deployEngine = DeployEngine()
     private var clickWorkItem: DispatchWorkItem?
+    private let welcomeController = WelcomeWindowController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Start file logging before anything else.
@@ -49,6 +50,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             name: StatusIcon.changedNotification,
             object: nil
         )
+        // Show welcome sheet on first launch, then open the popover.
+        welcomeController.showIfNeeded { [weak self] in
+            self?.togglePopover(nil)
+        }
+
         NotificationCenter.default.addObserver(
             forName: Notification.Name("DeployBar.iconStateChanged"),
             object: nil,
